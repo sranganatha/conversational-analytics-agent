@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "sha256": {
+    "daily.csv": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65",
+    "dialogues.jsonl": "91d1f7d1d459d44413bc26cca7764365580ce28af7f557c9600785e2bd747c0a",
+    "expected-totals.json": "9ab7a17c16e889c431ffb4d3f6e7af276d88df7df9751b5e13d0a913c0abfc8c",
+    "metrics.json": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+    "procedures.json": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+    "retrieval-sample.json": "1c96a3730b65b6ba048e33d82c321dffed7654fc9208bbe96d8d4e35c8c8fea5"
+  }
+}

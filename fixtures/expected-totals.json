@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "monthly": [
+    {
+      "queue": "intake",
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-01",
+      "case_count": 310,
+      "first_response_breaches": 93,
+      "resolution_breaches": 31
+    },
+    {
+      "queue": "intake",
+      "start_date": "2026-09-01",
+      "end_date": "2026-10-01",
+      "case_count": 360,
+      "first_response_breaches": 120,
+      "resolution_breaches": 60
+    },
+    {
+      "queue": "review",
+      "start_date": "2026-08-01",
+      "end_date": "2026-09-01",
+      "case_count": 248,
+      "first_response_breaches": 62,
+      "resolution_breaches": 31
+    },
+    {
+      "queue": "review",
+      "start_date": "2026-09-01",
+      "end_date": "2026-10-01",
+      "case_count": 300,
+      "first_response_breaches": 90,
+      "resolution_breaches": 30
+    }
+  ]
+}

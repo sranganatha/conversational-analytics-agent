@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "metrics": [
+    {
+      "metric_id": "first_response_breaches",
+      "description": "Cases whose first response exceeded the applicable threshold.",
+      "unit": "cases",
+      "numerator": "first_response_breaches",
+      "denominator": "case_count",
+      "allowed_filters": [
+        "queue",
+        "start_date",
+        "end_date"
+      ],
+      "threshold_kind": "first_response_hours"
+    },
+    {
+      "metric_id": "resolution_breaches",
+      "description": "Cases whose resolution exceeded the applicable threshold.",
+      "unit": "cases",
+      "numerator": "resolution_breaches",
+      "denominator": "case_count",
+      "allowed_filters": [
+        "queue",
+        "start_date",
+        "end_date"
+      ],
+      "threshold_kind": "resolution_hours"
+    }
+  ]
+}
