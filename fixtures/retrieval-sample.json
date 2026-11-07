@@ -1,0 +1,14 @@
+{
+  "user_input": "Which first-response rule applies to intake in September 2026?",
+  "response": "The deadline is two hours.",
+  "retrieved_contexts": [
+    "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+  ],
+  "retrieved_context_ids": [
+    "intake-response-09"
+  ],
+  "reference": "First response must occur within 2 hours.",
+  "reference_context_ids": [
+    "intake-response-09"
+  ]
+}
