@@ -1,6 +1,6 @@
 [project]
 name = "conversational-analytics-agent"
 version = "0.1.0"
-description = "Conversation and evidence contracts for service analytics"
+description = "Scoped evidence tools and conversation state for service analytics"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["duckdb==2.0.0"]
