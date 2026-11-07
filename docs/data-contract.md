@@ -40,8 +40,45 @@ Both tools require `queue`, `start_date`, and `end_date` for an interval of at m
 Metric IDs are `first_response_breaches` and `resolution_breaches`.
 The metric catalog fixes each measure's numerator, denominator, unit, threshold kind,
 and permitted filters. Tool records reject unknown fields, arbitrary SQL, unknown metrics,
-and queues outside the trusted caller's permissions. These are argument contracts;
-tool execution is not included in the current executable.
+and queues outside the trusted caller's permissions. All arguments in a batch are
+validated before tool dispatch.
+
+Procedure search quotes query tokens as literal FTS5 terms and applies queue and
+effective-date filters in the query. It returns at most five records on a successful
+search. Overlapping applicable rules with different thresholds return `CONFLICT`.
+Lexical matching is not a semantic relevance or answer-support guarantee.
+
+Metric lookup uses one application-owned SQL template for each catalogued metric.
+Queue and dates are bound parameters. The source snapshot opens read-only with
+external access disabled. A complete threshold history and daily coverage are
+required for a numeric result. Periods crossing a threshold change include each
+applicable source rule in `threshold_evidence`; the precomputed daily counts already
+use those source definitions. They cannot answer a hypothetical threshold change.
+
+| Tool status | Meaning |
+|---|---|
+| `OK` | Exact procedure evidence or a complete aggregate is available |
+| `NO_EVIDENCE` | No applicable procedure matched the search |
+| `CONFLICT` | Applicable source rules disagree on the threshold |
+| `MISSING_RULE` | Rules do not cover the requested metric interval |
+| `MISSING_DATA` | Daily records do not cover the entire requested interval |
+
+Incomplete coverage never becomes a partial or zero count. Tool statuses describe
+evidence availability and are separate from answer statuses.
+
+## Evidence snapshots and receipts
+
+The container build prepares a SQLite procedure index and a DuckDB analytical
+snapshot from source files. It never reads dialogue labels or expected monthly
+totals to build these databases. The runtime checks the database digests against
+build metadata, and both databases open read-only.
+
+Each tool result has a content-derived `receipt_id`, exact arguments, tool name,
+source digests, and result evidence. Identical requests over identical sources return
+the same receipt digest. Numeric evidence identifies the exact metric, queue, and
+half-open interval and includes its numerator, denominator, and unit. Receipt hashes
+identify content; they are not digital signatures or a defense against a hostile
+operator replacing both data and metadata.
 
 ## Caller and session
 
@@ -49,8 +86,25 @@ A trusted caller record contains `subject` and `allowed_queues`. The caller is s
 outside conversation text. A session contains `session_id`, `owner`, `version`,
 `turn_count`, and a timezone-aware `expires_at` timestamp.
 Authorization checks owner, expected version, exclusive expiry, and the six-turn limit.
-It rejects boolean versions and invalid timestamps. These checks do not implement a
-persistent session store or concurrent request locking.
+It rejects boolean versions and invalid timestamps. New sessions expire one hour
+after creation.
+
+SQLite stores sessions, turns, and receipts. A short `BEGIN IMMEDIATE` transaction
+checks the session version, runs the read-tool batch, and atomically commits the
+receipts, turn, active selection, and incremented version. A competing stale request
+returns `SESSION_CONFLICT`; a lock that exceeds the bounded wait returns
+`SESSION_BUSY`. A failed tool batch rolls back its session writes. SQLite serializes
+these bounded batches; no model call runs inside this transaction.
+
+Receipt and turn rows reject updates and deletes. Historical reads recheck current
+queue permissions and are denied if they would expose a revoked scope. An expired
+session cannot be read or advanced. A completed six-turn session remains readable
+until expiry, but cannot accept another turn.
+
+Changing the queue or interval clears active evidence. Changing the metric clears
+incompatible evidence; a procedure search refreshes the active evidence. Missing or
+conflicting results clear active answer evidence. Historical receipts remain intact.
+History explains earlier reads and does not authorize a current answer.
 
 A turn request contains only `session_id`, `expected_version`, and `message`.
 Caller identity and queue permissions are supplied separately. Unknown request fields,
