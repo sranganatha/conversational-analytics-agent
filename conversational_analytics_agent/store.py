@@ -11,8 +11,8 @@ from typing import Any
 from uuid import uuid4
 
 from .contracts import (
-    MAX_TOOL_CALLS, METRICS, Caller, ContractError, Session, ToolCall, TurnRequest,
-    record, require, text,
+    MAX_TOOL_CALLS, METRICS, TURN_TIMEOUT_SECONDS, Caller, ContractError, Session, ToolCall, TurnRequest,
+    record, require, text, validate_turn,
 )
 from .tools import EvidenceTools, canonical
 
@@ -26,6 +26,19 @@ CREATE TABLE IF NOT EXISTS turns (
     session_id TEXT NOT NULL REFERENCES sessions(session_id), version INTEGER NOT NULL,
     request TEXT NOT NULL, receipt_ids TEXT NOT NULL, PRIMARY KEY (session_id, version)
 );
+CREATE TABLE IF NOT EXISTS turn_claims (
+    session_id TEXT PRIMARY KEY REFERENCES sessions(session_id), token TEXT NOT NULL,
+    expires_at REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS outcomes (
+    session_id TEXT NOT NULL, version INTEGER NOT NULL, payload TEXT NOT NULL,
+    PRIMARY KEY (session_id, version),
+    FOREIGN KEY (session_id, version) REFERENCES turns(session_id, version)
+);
+CREATE TRIGGER IF NOT EXISTS outcomes_no_update BEFORE UPDATE ON outcomes
+BEGIN SELECT RAISE(ABORT, 'immutable outcome'); END;
+CREATE TRIGGER IF NOT EXISTS outcomes_no_delete BEFORE DELETE ON outcomes
+BEGIN SELECT RAISE(ABORT, 'immutable outcome'); END;
 CREATE TRIGGER IF NOT EXISTS receipts_no_update BEFORE UPDATE ON receipts
 BEGIN SELECT RAISE(ABORT, 'immutable receipt'); END;
 CREATE TRIGGER IF NOT EXISTS receipts_no_delete BEFORE DELETE ON receipts
@@ -149,6 +162,8 @@ class SessionStore:
                 row = self._load(database, request.session_id, caller)
                 session = _session(row)
                 session.authorize(caller, request.expected_version, now)
+                require(database.execute("SELECT 1 FROM turn_claims WHERE session_id = ? AND expires_at > ?",
+                        (session.session_id, now.timestamp())).fetchone() is None, "SESSION_BUSY")
                 state = _state(row["state"])
                 receipts = []
                 for call in calls:
@@ -189,8 +204,89 @@ class SessionStore:
             history = []
             for turn in database.execute("SELECT * FROM turns WHERE session_id = ? ORDER BY version",
                                          (session_id,)):
+                outcome = database.execute("SELECT payload FROM outcomes WHERE session_id = ? AND version = ?",
+                                           (session_id, turn["version"])).fetchone()
                 history.append({"version": turn["version"], "request": json.loads(turn["request"]),
+                                "outcome": json.loads(outcome["payload"]) if outcome else None,
                                 "receipts": [self._receipt(database, identity, caller)
                                              for identity in json.loads(turn["receipt_ids"])]})
             return {"session": {**asdict(session), "expires_at": session.expires_at.isoformat()},
                     "state": _state(row["state"]), "turns": history}
+
+    def claim(self, value: Any, caller: Caller, now: datetime) -> tuple[str, dict[str, Any]]:
+        request = TurnRequest.parse(value)
+        with closing(self._connect()) as database:
+            try:
+                database.execute("BEGIN IMMEDIATE")
+                row = self._load(database, request.session_id, caller)
+                _session(row).authorize(caller, request.expected_version, now)
+                require(database.execute("SELECT 1 FROM turn_claims WHERE session_id = ? AND expires_at > ?",
+                        (request.session_id, now.timestamp())).fetchone() is None, "SESSION_BUSY")
+                history = self.get(request.session_id, caller, now)
+                database.execute("DELETE FROM turn_claims WHERE session_id = ?", (request.session_id,))
+                token = uuid4().hex
+                database.execute("INSERT INTO turn_claims VALUES (?, ?, ?)",
+                                 (request.session_id, token, now.timestamp() + TURN_TIMEOUT_SECONDS))
+                database.commit()
+                return token, history
+            except sqlite3.OperationalError as exc:
+                database.rollback()
+                if exc.sqlite_errorcode in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+                    raise ContractError("SESSION_BUSY") from exc
+                raise
+            except BaseException:
+                database.rollback()
+                raise
+
+    def release(self, session_id: str, token: str) -> None:
+        with closing(self._connect()) as database:
+            database.execute("DELETE FROM turn_claims WHERE session_id = ? AND token = ?", (session_id, token))
+
+    def complete(self, value: Any, caller: Caller, token: str, receipts: list[dict[str, Any]],
+                 outcome: dict[str, Any], now: datetime) -> dict[str, Any]:
+        request = TurnRequest.parse(value)
+        require(type(receipts) is list and len(receipts) <= MAX_TOOL_CALLS, "TOOL_LIMIT")
+        with closing(self._connect()) as database:
+            try:
+                database.execute("BEGIN IMMEDIATE")
+                row = self._load(database, request.session_id, caller)
+                session = _session(row)
+                session.authorize(caller, request.expected_version, now)
+                claim = database.execute("SELECT * FROM turn_claims WHERE session_id = ? AND token = ?",
+                                         (session.session_id, token)).fetchone()
+                require(claim is not None, "SESSION_CONFLICT")
+                require(claim["expires_at"] > now.timestamp() or outcome["answer"]["status"] == "ERROR",
+                        "TURN_EXPIRED")
+                state = _state(row["state"])
+                calls = []
+                for receipt in receipts:
+                    payload = canonical({key: val for key, val in receipt.items() if key != "receipt_id"})
+                    require(hashlib.sha256(payload.encode()).hexdigest() == receipt["receipt_id"],
+                            "RECEIPT_DIGEST_MISMATCH")
+                    database.execute("INSERT OR IGNORE INTO receipts VALUES (?, ?)", (receipt["receipt_id"], payload))
+                    persisted = self._receipt(database, receipt["receipt_id"], caller)
+                    state = _advance(state, persisted)
+                    calls.append({"name": persisted["tool_name"], "arguments": persisted["arguments"]})
+                require(outcome["answer"]["tool_calls"] == calls, "TOOL_TRACE_MISMATCH")
+                if not receipts or outcome["answer"]["status"] != "ANSWERED":
+                    state["active_evidence"] = {}
+                validate_turn(outcome["answer"], caller, set(state["active_evidence"]))
+                version = session.version + 1
+                database.execute("INSERT INTO turns VALUES (?, ?, ?, ?)",
+                                 (session.session_id, version, canonical(asdict(request)),
+                                  canonical([receipt["receipt_id"] for receipt in receipts])))
+                database.execute("INSERT INTO outcomes VALUES (?, ?, ?)",
+                                 (session.session_id, version, canonical(outcome)))
+                database.execute("UPDATE sessions SET version = ?, turn_count = ?, state = ? WHERE session_id = ?",
+                                 (version, session.turn_count + 1, canonical(state), session.session_id))
+                database.execute("DELETE FROM turn_claims WHERE session_id = ? AND token = ?", (session.session_id, token))
+                database.commit()
+                return {"session_id": session.session_id, "version": version, "state": state, **outcome}
+            except sqlite3.OperationalError as exc:
+                database.rollback()
+                if exc.sqlite_errorcode in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED):
+                    raise ContractError("SESSION_BUSY") from exc
+                raise
+            except BaseException:
+                database.rollback()
+                raise

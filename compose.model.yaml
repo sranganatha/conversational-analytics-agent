@@ -1,0 +1,52 @@
+name: conversational-analytics-agent
+
+services:
+  ollama:
+    image: docker.io/ollama/ollama:0.40.13@sha256:93c1376d651a9f1579ee40cc5763852f08b204466371e4bb64bca2a1d8d08e2d
+    volumes:
+      - models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  pull-model:
+    image: docker.io/ollama/ollama:0.40.13@sha256:93c1376d651a9f1579ee40cc5763852f08b204466371e4bb64bca2a1d8d08e2d
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama"]
+    command: ["pull", "qwen3:1.7b"]
+
+  verify:
+    image: ${IMAGE:-conversational-analytics-agent:test}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      LANGSMITH_TRACING: "false"
+      LANGCHAIN_TRACING_V2: "false"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./artifacts:/app/artifacts
+    command: ["python", "-m", "conversational_analytics_agent.verify_model", "artifacts"]
+
+  chat:
+    extends:
+      service: verify
+    volumes: []
+    stdin_open: true
+    tty: true
+    command: ["python", "-m", "conversational_analytics_agent.chat"]
+
+volumes:
+  models:
+    name: conversational-analytics-agent-models
