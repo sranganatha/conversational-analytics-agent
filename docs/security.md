@@ -8,10 +8,10 @@ identity or data-protection service.
 |---|---|---|---|
 | User message | Forged queue grant or injected instruction | Caller scope supplied separately and checked on every tool call | CLI identity is fixed, not authenticated |
 | Session ID | Reading another caller's history | Owner checks before session and receipt reads | Single-host SQLite, no distributed session service |
-| Stored history | Old evidence reused after scope/date change | Revalidate scope and invalidate incompatible active evidence | History can still influence model tool selection |
+| Stored history | Old evidence or denied selections reused | Revalidate scope, invalidate old evidence, and carry validated selections rather than answer prose | Reference resolution remains bounded to supported vocabulary |
 | Procedure passage | Embedded instructions or stale rule | Treat as data, filter scope/effective date, validate evidence IDs | Semantic resistance remains model-dependent |
-| Model tool proposal | Arbitrary SQL, unknown tools, or excessive reads | Enumerated tools and strict arguments; bounded graph | Wrong allowed tool choice remains possible |
-| Model answer | Invented citations or numbers | Current-evidence references and numeric-token checks | Same numbers can be used in an incorrect claim |
+| Model action proposal | Wrong task, arbitrary SQL, or excessive reads | Enumerated actions, task compatibility, strict arguments, and bounded repair | Invalid proposals can still exhaust the turn and fail visibly |
+| Model claim | Invented value, wrong role/unit, or citation | Validate every model claim against current required evidence before rendering | This does not validate arbitrary source quality or unrestricted questions |
 | Concurrent request | Duplicate commits or stale worker overwrite | Version checks and expiring token-bound turn claims | Does not cancel remote inference |
 | Model transport | Proxy leakage, oversized response, unbounded call | Explicit local endpoint allowlist, proxies disabled, byte/time/token limits | Local Ollama service has no application authentication |
 | Evaluation | Label leakage or favorable score hiding failures | Separate references, frozen inputs, paired runs, explicit missing coverage | Small corpus and same-weight judge limit conclusions |

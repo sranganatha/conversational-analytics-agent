@@ -21,14 +21,17 @@ Caller scope + owner-bound session + message
 Paired baseline/conversation runs -> independent checks + Ragas -> comparison report
 ```
 
-The corpus contains twelve versioned procedure records, 122 daily aggregate records
-for August and September 2026, and twenty-four four-turn dialogues split evenly between
-development and holdout with disjoint scenario families. Metrics cover first-response
-and resolution breaches for intake and review queues. All data is synthetic.
+The source corpus contains twelve versioned procedures and 122 daily aggregate records
+for August and September 2026. Evaluation uses twelve development, twelve inspected
+regression, and twelve fresh author-frozen validation dialogues, each with four turns.
+Metrics cover first-response and resolution breaches for intake and review queues.
+All data is synthetic.
 
-The model chooses procedure search, metric reads, both tools, or a non-answer outcome.
-Application code owns caller authority, calendar boundaries, parameterized SQL,
-execution budgets, and evidence validation. SQLite FTS5 provides lexical procedure
+The model proposes rule lookup, metric reads, both, or a non-answer action.
+Application code validates task compatibility before any read. The model then extracts
+typed claims from current evidence; code checks value, unit, role, and identity before
+rendering the answer. Caller authority, calendar boundaries, parameterized SQL,
+and execution budgets remain application-owned. SQLite FTS5 provides lexical procedure
 search; read-only DuckDB templates provide analytical results. LangGraph coordinates
 the small workflow. No SQL supplied by the model executes.
 
@@ -81,7 +84,7 @@ make verify-model
 make model-down
 ```
 
-The seven-turn [model smoke verification](artifacts/model-verification.md) is separate
+The ten-turn [model smoke verification](artifacts/task-contracts-v2/model-verification.md) is separate
 from the larger quality experiment. Stopping the service retains its named model cache.
 Run `make model-down` after live commands, including failed or interrupted runs.
 
@@ -90,42 +93,49 @@ Run `make model-down` after live commands, including failed or interrupted runs.
 ```sh
 make calibrate-judge
 make evaluate-development
+make evaluate-regression
 make evaluate-ragas
 make model-down
 ```
 
 The separate evaluation image adds pinned Ragas dependencies without expanding the
-chat runtime. Twelve hand-labeled development answers calibrate the judge. A paired
+chat runtime. Twenty-four hand-labeled development answers calibrate the judge. A paired
 development run precedes three frozen holdout repetitions. The baseline and candidate
-share model, prompts, tools, corpus, and budgets; conversation history and saved
-selection are the difference.
+share model, prompts, tools, corpus, and budgets; validated conversational selection
+and task state are the difference. The inspected original holdout is regression data;
+fresh author-frozen validation families provide the new holdout.
 
 Reports retain runtime errors, wrong tool choices, clarification, abstention, missing
 judge outcomes, and coverage. Ragas scores retrieval IDs, dialogue tool trajectories,
 and per-answer faithfulness. Independent checks validate status, scope, dates, metric,
 required evidence, and expected count results.
 
-Read the [holdout report](artifacts/evaluation-holdout.md),
-[development report](artifacts/evaluation-development.md),
+Read the [holdout report](artifacts/task-contracts-v2/evaluation-holdout.md),
+[development report](artifacts/task-contracts-v2/evaluation-development.md),
+[regression report](artifacts/task-contracts-v2/evaluation-regression.md),
 [method and decision policy](docs/evaluation.md), and
 [findings](docs/evaluation-findings.md). The recorded verdict describes this finite
 experiment; a high average score cannot override a failed acceptance rule.
 
-The recorded verdict is **REJECTED**. Conversation state increased exact successful
-turns, but the selected model failed count requests and tool-selection checks. The
-findings explain a fully faithful procedure answer that still fails a count question.
+The recorded comparison is **IMPROVED**: each of three holdout repetitions has 48/48
+exact conversational turns versus 22/48 for the current-message baseline, with no
+numeric, claim, scope, runtime, or judge failures. All 96 candidate answers received
+faithfulness scores of 1.0. Development and regression each have 48/48 exact candidate
+turns. The [original rejected comparison](artifacts/evaluation-holdout.md) remains
+available; the findings explain the task and context errors that required correction.
 
 ## Boundaries
 
-Citation presence and numeric-token checks do not prove semantic correctness. The
-selected model can choose an allowed but incorrect tool or answer the wrong task.
+Citation presence alone does not establish correctness. Incompatible model actions and
+unsupported typed claims fail validation; at most one visible repair per stage is
+allowed within the turn budget. The supported vocabulary and source facts remain bounded.
 The Ragas judge uses the same model weights, so calibration does not eliminate
 correlated errors. The small synthetic corpus does not establish production quality.
 
 This is a single-host, monthly analytics reference with two approved metric templates.
 It does not provide general SQL generation, external user authentication, distributed
 availability, or arbitrary business analytics. Model calls have explicit limits and
-no automatic retry or fallback. Default tests and CI make no model calls.
+no transport retry or provider fallback. Default tests and CI make no model calls.
 
 See [architecture](docs/architecture.md), [data contracts](docs/data-contract.md),
 [security boundaries](docs/security.md), [operations](docs/runbook.md), and the

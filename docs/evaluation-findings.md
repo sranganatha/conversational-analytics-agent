@@ -5,7 +5,65 @@ conversation state. The recorded artifacts identify exact model, source, fixture
 dependency, and policy fingerprints. See [the evaluation method](evaluation.md) for
 the frozen comparison rule and coverage definitions.
 
-## Recorded result
+## Current recorded result
+
+The corrected comparison is **IMPROVED** at runtime revision
+`a3177a2618d77ce60af05eb9ad1d0f4208e2693c`. Calibration matches 24/24 labels.
+Development and inspected regression each complete 96 paired turns, with 48/48 exact
+candidate turns. Fresh holdout completes all 288 paired turns across three repetitions.
+
+Each fresh repetition produces the following result:
+
+| Configuration | Exact turns | Status matches | Faithful answers | Numeric/claim/scope failures | Runtime/judge errors |
+|---|---:|---:|---:|---:|---:|
+| Current-message baseline | 22/48 | 22/48 | 8/8 | 0 | 0 |
+| Conversational state | 48/48 | 48/48 | 32/32 | 0 | 0 |
+
+All answered turns receive a score. Clarifications and abstentions remain in exact
+task denominators. No semantic repair was needed in the recorded development,
+regression, or holdout runs; focused tests exercise rejected proposals and repairs.
+All 32 frozen input fingerprints match after completion. The model and dependencies
+are unchanged; the workflow and evaluation adapter were corrected together.
+
+See the [current holdout](../artifacts/task-contracts-v2/evaluation-holdout.md),
+[development](../artifacts/task-contracts-v2/evaluation-development.md),
+[regression](../artifacts/task-contracts-v2/evaluation-regression.md), and
+[verification](../artifacts/task-contracts-v2/local-verification.md).
+The fresh set is author-frozen rather than independently blind. Fixed-setting
+repetitions and a same-weight judge do not establish population-level reliability.
+
+## Why the original configuration failed
+
+The workflow checked whether an answer matched the selected tool, but did not enforce
+whether that tool answered the requested task. A procedure deadline could therefore
+pass grounding while a count request remained unanswered. Month-only corrections
+could retain the wrong period, and denied or unsupported requests could replace useful
+conversation context. Checking for a number in an answer did not establish its role,
+unit, or source.
+
+The correction separates task resolution from model proposals. Model actions must
+match the resolved task; model-extracted claims must match current tool evidence by
+role, ID, value, and unit. Only validated claims become rendered answers. A bounded
+semantic repair remains visible and cannot dispatch an invalid proposal. Validated
+selection survives denied requests, and a month can inherit an already established
+year. Access checks still run on every read.
+
+Two original missing-period references incorrectly prohibited availability reads.
+Versioned errata correct those expectations without changing the original records.
+The inspected original holdout is now regression data; a new author-frozen set
+provides the current holdout. It is not an independently blind benchmark.
+
+Preflight also exposed a judge adapter problem: the small judge sometimes treated
+follow-up instructions as factual claims or misread terse structured context. The
+adapter now supplies the actual resolved question and readable evidence alongside
+exact source records. Original messages, full judge inputs, and generated verdicts
+remain recorded. All nine non-perfect preflight candidate scores are preserved in
+[input diagnostics](../artifacts/task-contracts-v2/judge-input-diagnostics.json).
+Calibration now has 24 controls, including supported and unsupported structured
+answers. Independent task checks still use the original conversation references;
+no judge claim is filtered and no acceptance threshold is lowered.
+
+## Original recorded result
 
 The verdict is **REJECTED**. Calibration matched all twelve hand labels. Development
 completed 96 turns; holdout completed 288 turns across three paired repetitions.
@@ -45,7 +103,7 @@ This is why faithfulness cannot stand in for task success, tool accuracy, or num
 correctness. It also explains why a high average support score cannot override the
 comparison's failure gate.
 
-## Interpretation boundaries
+## Original interpretation boundaries
 
 Session state may improve some follow-ups without making the selected model reliable
 on the entire task. Wrong tool choices, unresolved references, validated error outputs,

@@ -116,34 +116,40 @@ carry at most 8,000 context characters. The graph uses one planning call and, wh
 evidence is available, one answer call. Each model request has a 512-token generation
 limit, a 4,096-token context configuration, a 16,000-character prompt limit, and a
 65,536-byte response limit. Socket timeouts and elapsed-time checks enforce the turn
-budget at model and tool boundaries. There are no automatic retries or fixture fallbacks.
+budget at model and tool boundaries. There are no transport retries or fixture fallbacks.
 
 ## Conversational orchestration
 
-A LangGraph workflow resolves a monthly request, conditionally executes validated
-read tools, and composes an answer from the current results. The planner returns a
-structured proposal and selected tool names. Application code normalizes explicit
-queue names, the two metric names, and named calendar months before model planning.
-An omitted slot can carry over from owned structured context. Missing or ambiguous
-slots clarify before model or data access. The model cannot override an explicit
-selection. Calendar boundaries and previous-month
-arithmetic are calculated by application code, including year transitions. The agent
-supports whole-month questions; the underlying tools also accept bounded date intervals.
+A LangGraph workflow resolves a monthly request, validates a model-proposed action,
+executes bounded read tools, and validates model-extracted evidence claims. Queue,
+metric, month, and count/rule/both intent are explicit application state. A month-only
+correction inherits a known year; a new conversation cannot assume one. Missing or
+ambiguous slots clarify before model or data access.
 
-Conversational mode supplies owned user/assistant history and the prior selection to
-the planner. Baseline mode supplies neither. Both use the same prompts, model, tools,
-and limits. The answer composer sees current evidence and the resolved request, not
-prior conversation text or evaluation labels.
+Conversational mode carries validated selections and intent from owned turn records.
+It does not send previous answer prose to the planner. Denied and unsupported requests
+do not replace that context. Baseline mode supplies no prior state. Both configurations
+use the same model, prompts, tools, and limits.
 
-Missing or conflicting tool results produce an abstention without asking the model to
-invent a result. Invalid model output, unknown citations, numerical tokens absent from
-the supplied evidence, transport failure, and truncation remain explicit errors.
-Count answers must include the recorded count and cite its aggregate receipt; rule
-answers must cite an applicable threshold record. Clarification retains known partial
-slots so a later response can supply the missing metric or month.
-Numerical-token membership does not verify every numerical relation or answer meaning.
-Visible structured proposals, answers, actual tool attempts, receipts, usage, and timings
-are recorded. Hidden model reasoning is neither requested nor retained.
+The model action is `RULE`, `COUNT`, `BOTH`, `CLARIFY`, or `ABSTAIN`. It cannot supply
+queue grants, dates, SQL, or arbitrary tool names. The application maps an accepted
+action to typed tool calls and checks its compatibility with the current task before
+any read. Missing or conflicting sources abstain without asking the model to invent data.
+
+The answer model returns `status` and `claims`. Each claim contains `kind` (`count` or
+`deadline`), `evidence_id`, integer `value`, and `unit` (`cases` or `hours`). Every claim
+must match a required current source record exactly. A valid count cannot be replaced
+with a deadline or denominator that happens to contain a supported numeric token.
+The application renders only those validated model claims with the resolved queue,
+metric, and period. A failed model response is never replaced with fixture content.
+
+Each stage can make one visible repair generation for a rejected semantic proposal.
+The total remains at most four model calls and 60 seconds per turn. Invalid output,
+unknown evidence, exhausted repairs, transport failure, and truncation remain errors.
+Expected scope denial is an abstention before data access. Structured proposals,
+rejections, claims, actual tool attempts, receipts, usage, and timings are recorded;
+hidden model reasoning is neither requested nor retained. See the
+[task-contract decision](adr/0002-task-contracts-and-grounded-claims.md).
 
 Model inference runs outside SQLite transactions. An owner- and version-checked claim
 reserves the turn for 60 seconds. Completion atomically appends the outcome and tool
@@ -182,3 +188,16 @@ Every expected turn separates status, resolved queue/date/metric, evidence IDs, 
 numeric value where applicable, and expected tool names from the user's message.
 Unknown evidence, stale procedure labels, incorrect totals, and family split overlap
 fail validation. The corpus validates a finite contract rather than general assistant quality.
+
+The original corpus and rejected evidence remain unchanged. Once inspected, its old
+holdout is regression data. `reference-errata.json` documents two original references
+that incorrectly expected no tool calls for missing-period abstentions; those requests
+need an availability lookup. Errata are applied only by the evaluator, never by the model.
+
+`validation-v2.jsonl` adds twelve four-turn dialogues in fresh author-frozen families.
+Its manifest binds the questions and independent references before the correction run.
+It includes mixed rule/count requests, metric changes, successive clarification,
+unsupported personal data, empty-source recovery, and denied-context isolation.
+The fixture author also implemented the corrections; this is not an independent blind
+benchmark. Family IDs and exact input text are disjoint from the original corpus,
+which does not prove semantic novelty by itself.
