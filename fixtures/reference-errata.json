@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "corrections": [
+    {
+      "turn_index": 0,
+      "expected": {
+        "status": "ABSTAIN",
+        "queue": "intake",
+        "start_date": "2026-07-01",
+        "end_date": "2026-08-01",
+        "metric_id": "first_response_breaches",
+        "evidence_ids": [],
+        "value": null
+      },
+      "dialogue_id": "unavailable-month-intake",
+      "expected_tools": [
+        "read_service_metrics"
+      ]
+    },
+    {
+      "turn_index": 0,
+      "expected": {
+        "status": "ABSTAIN",
+        "queue": "review",
+        "start_date": "2026-07-01",
+        "end_date": "2026-08-01",
+        "metric_id": "first_response_breaches",
+        "evidence_ids": [],
+        "value": null
+      },
+      "dialogue_id": "unavailable-month-review",
+      "expected_tools": [
+        "read_service_metrics"
+      ]
+    }
+  ],
+  "reason": "Missing-period abstentions require a real availability lookup; the original references incorrectly required no tools."
+}
