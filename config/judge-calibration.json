@@ -3,17 +3,89 @@
   "split": "development",
   "label_method": "Hand-authored entailment labels from the frozen development procedure and monthly-total facts. Each pair differs in one factual claim. Citation IDs do not establish support.",
   "cases": [
-    {"id":"september-rule-supported","question":"What is the September intake first-response rule?","context":"For the intake queue in September 2026, first response must occur within 2 hours.","answer":"Intake first response must occur within 2 hours. [intake-response-09]","supported":true},
-    {"id":"september-rule-wrong","question":"What is the September intake first-response rule?","context":"For the intake queue in September 2026, first response must occur within 2 hours.","answer":"Intake first response must occur within 4 hours. [intake-response-09]","supported":false},
-    {"id":"august-rule-supported","question":"What is the August intake first-response rule?","context":"For the intake queue in August 2026, first response must occur within 4 hours.","answer":"Intake first response must occur within 4 hours. [intake-response-08]","supported":true},
-    {"id":"august-rule-wrong","question":"What is the August intake first-response rule?","context":"For the intake queue in August 2026, first response must occur within 4 hours.","answer":"Intake first response must occur within 2 hours. [intake-response-08]","supported":false},
-    {"id":"resolution-supported","question":"What is the September intake resolution rule?","context":"For the intake queue in September 2026, resolution must occur within 24 hours.","answer":"Intake resolution must occur within 24 hours. [intake-resolution-09]","supported":true},
-    {"id":"resolution-wrong","question":"What is the September intake resolution rule?","context":"For the intake queue in September 2026, resolution must occur within 24 hours.","answer":"Intake resolution must occur within 48 hours. [intake-resolution-09]","supported":false},
-    {"id":"september-count-supported","question":"How many September intake first-response breaches occurred?","context":"Intake had 120 first-response breaches in September 2026.","answer":"Intake had 120 first-response breaches in September 2026. [aggregate:intake:first_response_breaches:2026-09]","supported":true},
-    {"id":"september-count-wrong","question":"How many September intake first-response breaches occurred?","context":"Intake had 120 first-response breaches in September 2026.","answer":"Intake had 121 first-response breaches in September 2026. [aggregate:intake:first_response_breaches:2026-09]","supported":false},
-    {"id":"august-count-supported","question":"How many August intake first-response breaches occurred?","context":"Intake had 93 first-response breaches in August 2026.","answer":"Intake had 93 first-response breaches in August 2026. [aggregate:intake:first_response_breaches:2026-08]","supported":true},
-    {"id":"august-count-wrong","question":"How many August intake first-response breaches occurred?","context":"Intake had 93 first-response breaches in August 2026.","answer":"Intake had 94 first-response breaches in August 2026. [aggregate:intake:first_response_breaches:2026-08]","supported":false},
-    {"id":"strict-boundary-supported","question":"When is the intake first-response threshold breached?","context":"Count a first-response breach only when elapsed time exceeds 2 hours. Equality is not a breach.","answer":"A first response at exactly 2 hours is not a breach.","supported":true},
-    {"id":"strict-boundary-wrong","question":"When is the intake first-response threshold breached?","context":"Count a first-response breach only when elapsed time exceeds 2 hours. Equality is not a breach.","answer":"A first response at exactly 2 hours is a breach.","supported":false}
+    {
+      "id": "september-rule-supported",
+      "question": "What is the September intake first-response rule?",
+      "context": "Evidence ID: intake-response-09. For the intake queue in September 2026, first response must occur within 2 hours.",
+      "answer": "Intake first response must occur within 2 hours. [intake-response-09]",
+      "supported": true
+    },
+    {
+      "id": "september-rule-wrong",
+      "question": "What is the September intake first-response rule?",
+      "context": "Evidence ID: intake-response-09. For the intake queue in September 2026, first response must occur within 2 hours.",
+      "answer": "Intake first response must occur within 4 hours. [intake-response-09]",
+      "supported": false
+    },
+    {
+      "id": "august-rule-supported",
+      "question": "What is the August intake first-response rule?",
+      "context": "Evidence ID: intake-response-08. For the intake queue in August 2026, first response must occur within 4 hours.",
+      "answer": "Intake first response must occur within 4 hours. [intake-response-08]",
+      "supported": true
+    },
+    {
+      "id": "august-rule-wrong",
+      "question": "What is the August intake first-response rule?",
+      "context": "Evidence ID: intake-response-08. For the intake queue in August 2026, first response must occur within 4 hours.",
+      "answer": "Intake first response must occur within 2 hours. [intake-response-08]",
+      "supported": false
+    },
+    {
+      "id": "resolution-supported",
+      "question": "What is the September intake resolution rule?",
+      "context": "Evidence ID: intake-resolution-09. For the intake queue in September 2026, resolution must occur within 24 hours.",
+      "answer": "Intake resolution must occur within 24 hours. [intake-resolution-09]",
+      "supported": true
+    },
+    {
+      "id": "resolution-wrong",
+      "question": "What is the September intake resolution rule?",
+      "context": "Evidence ID: intake-resolution-09. For the intake queue in September 2026, resolution must occur within 24 hours.",
+      "answer": "Intake resolution must occur within 48 hours. [intake-resolution-09]",
+      "supported": false
+    },
+    {
+      "id": "september-count-supported",
+      "question": "How many September intake first-response breaches occurred?",
+      "context": "Evidence ID: aggregate:intake:first_response_breaches:2026-09. Intake had 120 first-response breaches in September 2026.",
+      "answer": "Intake had 120 first-response breaches in September 2026. [aggregate:intake:first_response_breaches:2026-09]",
+      "supported": true
+    },
+    {
+      "id": "september-count-wrong",
+      "question": "How many September intake first-response breaches occurred?",
+      "context": "Evidence ID: aggregate:intake:first_response_breaches:2026-09. Intake had 120 first-response breaches in September 2026.",
+      "answer": "Intake had 121 first-response breaches in September 2026. [aggregate:intake:first_response_breaches:2026-09]",
+      "supported": false
+    },
+    {
+      "id": "august-count-supported",
+      "question": "How many August intake first-response breaches occurred?",
+      "context": "Evidence ID: aggregate:intake:first_response_breaches:2026-08. Intake had 93 first-response breaches in August 2026.",
+      "answer": "Intake had 93 first-response breaches in August 2026. [aggregate:intake:first_response_breaches:2026-08]",
+      "supported": true
+    },
+    {
+      "id": "august-count-wrong",
+      "question": "How many August intake first-response breaches occurred?",
+      "context": "Evidence ID: aggregate:intake:first_response_breaches:2026-08. Intake had 93 first-response breaches in August 2026.",
+      "answer": "Intake had 94 first-response breaches in August 2026. [aggregate:intake:first_response_breaches:2026-08]",
+      "supported": false
+    },
+    {
+      "id": "strict-boundary-supported",
+      "question": "When is the intake first-response threshold breached?",
+      "context": "Count a first-response breach only when elapsed time exceeds 2 hours. Equality is not a breach.",
+      "answer": "A first response at exactly 2 hours is not a breach.",
+      "supported": true
+    },
+    {
+      "id": "strict-boundary-wrong",
+      "question": "When is the intake first-response threshold breached?",
+      "context": "Count a first-response breach only when elapsed time exceeds 2 hours. Equality is not a breach.",
+      "answer": "A first response at exactly 2 hours is a breach.",
+      "supported": false
+    }
   ]
 }
