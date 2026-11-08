@@ -1,4 +1,5 @@
 import copy
+import json
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -68,6 +69,14 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(len(result["model_calls"]), 2)
         saved = self.store.get(self.session.session_id, self.caller, self.now)
         self.assertEqual(saved["turns"][0]["outcome"]["answer"], result["answer"])
+
+    def test_claim_prompt_contains_roles_and_sources_not_preassembled_answers(self):
+        model = ScriptedModel([plan(), answer()])
+        self.run_turn(model)
+        payload = json.loads(model.prompts[1][1]["content"])
+        self.assertNotIn("required_claims", payload)
+        self.assertEqual(payload["required_roles"], [{"kind": "count", "unit": "cases"}])
+        self.assertTrue(payload["current_evidence"])
 
     def test_validated_selection_is_available_without_prior_answer_prose(self):
         self.run_turn(ScriptedModel([plan(), answer()]), message="Count intake first-response breaches in September 2026.")
