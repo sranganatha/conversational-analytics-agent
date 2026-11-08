@@ -112,8 +112,43 @@ including body-supplied permission grants, are rejected.
 
 The contract limits a turn to three tool calls and four model calls with a 60-second
 deadline. User messages are limited to 1,200 characters. Retrieval evaluation samples
-carry at most 8,000 context characters. Model-call counts and deadlines are declared
-limits; enforcement requires an execution loop.
+carry at most 8,000 context characters. The graph uses one planning call and, when
+evidence is available, one answer call. Each model request has a 512-token generation
+limit, a 4,096-token context configuration, a 16,000-character prompt limit, and a
+65,536-byte response limit. Socket timeouts and elapsed-time checks enforce the turn
+budget at model and tool boundaries. There are no automatic retries or fixture fallbacks.
+
+## Conversational orchestration
+
+A LangGraph workflow resolves a monthly request, conditionally executes validated
+read tools, and composes an answer from the current results. The planner returns a
+structured proposal and selected tool names. Application code normalizes explicit
+queue names, the two metric names, and named calendar months before model planning.
+An omitted slot can carry over from owned structured context. Missing or ambiguous
+slots clarify before model or data access. The model cannot override an explicit
+selection. Calendar boundaries and previous-month
+arithmetic are calculated by application code, including year transitions. The agent
+supports whole-month questions; the underlying tools also accept bounded date intervals.
+
+Conversational mode supplies owned user/assistant history and the prior selection to
+the planner. Baseline mode supplies neither. Both use the same prompts, model, tools,
+and limits. The answer composer sees current evidence and the resolved request, not
+prior conversation text or evaluation labels.
+
+Missing or conflicting tool results produce an abstention without asking the model to
+invent a result. Invalid model output, unknown citations, numerical tokens absent from
+the supplied evidence, transport failure, and truncation remain explicit errors.
+Count answers must include the recorded count and cite its aggregate receipt; rule
+answers must cite an applicable threshold record. Clarification retains known partial
+slots so a later response can supply the missing metric or month.
+Numerical-token membership does not verify every numerical relation or answer meaning.
+Visible structured proposals, answers, actual tool attempts, receipts, usage, and timings
+are recorded. Hidden model reasoning is neither requested nor retained.
+
+Model inference runs outside SQLite transactions. An owner- and version-checked claim
+reserves the turn for 60 seconds. Completion atomically appends the outcome and tool
+receipts and advances the session. Expired claims can be replaced, but stale workers
+cannot commit over or release the replacement. See the [turn-claim decision](adr/0001-bounded-turn-claims.md).
 
 ## Answer and evaluation records
 

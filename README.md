@@ -1,6 +1,6 @@
 # Conversational Analytics Agent
 
-Scoped evidence tools for questions over service procedures and operational metrics.
+Conversational questions over service procedures and operational metrics, with cited evidence.
 
 The synthetic dataset connects escalation rules with daily service counts for two queues.
 It supports questions such as which rule applies to a period, how many cases breached
@@ -17,11 +17,14 @@ that rule, and how a follow-up changes the queue or date range.
 - Owner-bound SQLite sessions with version checks, expiry, and a six-turn limit
 - Append-only tool receipts tied to the request and source digests
 - Active evidence invalidation when the selected queue, dates, or metric changes
+- A bounded LangGraph workflow that selects read tools, clarifies ambiguity, and composes answers from fresh evidence
+- A current-message-only baseline using the same model, tools, and prompts without conversation history
+- A pinned local Qwen model served by Ollama in Podman
 - Validated caller, session, read-tool, answer, and retrieval-evaluation records
 - Offline checks for fixture integrity, split isolation, evidence references, and aggregate totals
 
-The executable runs fixed tool requests and verifies session behavior. It does not
-interpret natural-language follow-ups, generate model answers, or score model quality.
+The local assistant resolves monthly follow-ups and generates cited answers. The
+deterministic demo exercises fixed tool requests separately from model behavior.
 
 ## Validate
 
@@ -44,7 +47,8 @@ Validated 12 procedures, 122 daily records, and 24 dialogues (12 development, 12
 
 `make check` runs fixture validation; `make test` runs the tests. Both use Podman.
 Initial image builds require network access to fetch the pinned Python image and
-hash-verified DuckDB wheel. Snapshot preparation uses only the procedure, metric,
+hash-verified dependency wheels. The lock targets the Python 3.12 Linux amd64 container.
+Snapshot preparation uses only the procedure, metric,
 and daily-count source files, without loading evaluation labels.
 
 ## Tool demonstration
@@ -62,6 +66,52 @@ The demonstration also checks that old selections lose active evidence, identica
 reads have identical receipt digests, unauthorized reads fail, and persisted turns
 survive a store reopen. Temporary session data is removed when the demo exits.
 No model calls, credentials, or host data files are required.
+
+## Local conversation
+
+With Podman Compose support available:
+
+```sh
+make chat
+```
+
+Try these questions in order:
+
+1. For the intake queue in September 2026, what is the first-response rule?
+2. How many cases exceeded it that month?
+3. And the previous month?
+4. What about the review queue?
+
+The assistant checks scope on every read and retrieves fresh evidence for each turn.
+The model selects a month; application code calculates its exact calendar boundaries.
+Ambiguous questions can return a clarification rather than a count. A session accepts
+at most six turns and ends when you enter `quit`. The local caller can read both
+synthetic queues; this CLI does not authenticate external users.
+
+The first run downloads approximately 1.4 GB of model data. Model identity is checked
+against [the pinned configuration](config/model.json). A digest mismatch fails visibly.
+The model service uses a private container network without publishing a host port.
+
+Run the separately labeled smoke verification and stop the service with:
+
+```sh
+make verify-model
+make model-down
+```
+
+Verification writes a JSON transcript and Markdown summary under `artifacts/`.
+See the recorded [local-model verification](artifacts/model-verification.md).
+The service stays running until `make model-down`, including after verification failure.
+Stopping it retains the named model cache for reuse. Chat session data is temporary;
+verification preserves its visible transcript in the report. No project packages are
+installed on the host.
+
+## Answer boundaries
+
+Answers cite the current tool evidence. Citation validation and numerical-token checks
+reject some malformed or unsupported outputs, but do not prove semantic correctness.
+The local-model smoke run is separate from held-out evaluation and does not establish
+general answer quality. Default tests and CI make no model calls.
 
 ## Data and contracts
 
