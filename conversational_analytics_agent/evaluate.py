@@ -16,7 +16,7 @@ from .contracts import Caller, ContractError, require
 from .evaluation import comparison_verdict, independent_checks, summarize
 from .fixtures import evaluation_cases, load_json
 from .model import OllamaModel
-from .ragas_metrics import LocalJudge, dialogue_tools, retrieval_scores, score_faithfulness
+from .ragas_metrics import LocalJudge, dialogue_tools, judge_context, resolved_judge_question, retrieval_scores, score_faithfulness
 from .store import SessionStore
 from .tools import EvidenceTools, canonical
 
@@ -49,7 +49,7 @@ def metadata():
     policy = load_json(ROOT / "config" / "evaluation.json")
     require(all(policy[key] == value for key, value in {
         "holdout_repetitions": 3, "judge_timeout_seconds": 60, "judge_max_calls": 2,
-        "calibration_required_matches": 12, "faithfulness_required_score": 1.0}.items()), "INVALID_EVALUATION_POLICY")
+        "calibration_required_matches": 24, "faithfulness_required_score": 1.0}.items()), "INVALID_EVALUATION_POLICY")
     return {"execution_mode": "ollama-ragas", "timestamp": datetime.now(timezone.utc).isoformat(),
             "python": platform.python_version(), "architecture": platform.machine(),
             "source_revision": os.environ.get("SOURCE_REVISION", "unknown"), "fingerprints": fingerprints(),
@@ -64,9 +64,12 @@ async def calibrate(output):
     report["model"] = dict(client.identity)
     judge = LocalJudge(client)
     cases = load_json(ROOT / "config" / "judge-calibration.json")["cases"]
-    require(len(cases) == 12, "INVALID_CALIBRATION")
+    require(len(cases) == 24, "INVALID_CALIBRATION")
     for case in cases:
-        result = await judge.score(case["question"], case["answer"], [case["context"]])
+        question = resolved_judge_question(case["resolved_request"]) if "resolved_request" in case else case["question"]
+        contexts = [judge_context(item) for item in case["context_records"]] if "context_records" in case else [case["context"]]
+        result = await judge.score(question, case["answer"], contexts)
+        result.update(judge_user_input=question, judge_contexts=contexts, original_user_input=case["question"])
         matched = result["state"] == "SCORED" and (result["value"] == 1) == case["supported"]
         report["cases"].append({**case, "result": result, "matched": matched})
         write_report(output / "judge-calibration.json", report)

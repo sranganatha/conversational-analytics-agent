@@ -80,7 +80,8 @@ def grounded_answer(value: Any, plan: dict[str, Any], facts: list[dict[str, Any]
     metric = "first-response" if plan["metric_id"] == "first_response_breaches" else "resolution"
     pieces = []
     for claim in sorted(data["claims"], key=lambda item: item["kind"] != "deadline"):
-        label = f"{metric} deadline" if claim["kind"] == "deadline" else f"{metric} breaches"
-        pieces.append(f"{label}: {claim['value']} {claim['unit']}")
-    return {"status": "ANSWERED", "message": f"For {plan['queue']} in {plan['period']}, " + "; ".join(pieces) + ".",
+        label = f"{metric} deadline" if claim["kind"] == "deadline" else f"{metric} breach count"
+        pieces.append(f"For the {plan['queue']} queue in {plan['period']}, the {label} is "
+                      f"{claim['value']} {claim['unit']}.")
+    return {"status": "ANSWERED", "message": " ".join(pieces),
             "evidence_ids": [item["evidence_id"] for item in data["claims"]], "error_code": None}

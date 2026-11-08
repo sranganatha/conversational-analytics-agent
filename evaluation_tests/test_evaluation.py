@@ -10,7 +10,9 @@ from conversational_analytics_agent.contracts import Caller
 from conversational_analytics_agent.evaluate import run_dialogue
 from conversational_analytics_agent.evaluation import comparison_verdict, independent_checks, summarize
 from conversational_analytics_agent.fixtures import evaluation_cases, load_json
-from conversational_analytics_agent.ragas_metrics import LocalJudge, dialogue_tools, retrieval_scores
+from conversational_analytics_agent.ragas_metrics import (
+    LocalJudge, dialogue_tools, judge_context, resolved_judge_question, retrieval_scores, score_faithfulness,
+)
 from conversational_analytics_agent.store import SessionStore
 from conversational_analytics_agent.tools import EvidenceTools
 
@@ -69,12 +71,43 @@ class EvaluationTests(unittest.TestCase):
     def test_calibration_citation_identities_exist_in_supplied_context(self):
         root = Path(__file__).resolve().parent.parent
         cases = load_json(root / "config" / "judge-calibration.json")["cases"]
-        self.assertEqual(len({case["id"] for case in cases}), 12)
-        self.assertEqual(sum(case["supported"] is True for case in cases), 6)
-        self.assertEqual(sum(case["supported"] is False for case in cases), 6)
+        self.assertEqual(len({case["id"] for case in cases}), 24)
+        self.assertEqual(sum(case["supported"] is True for case in cases), 12)
+        self.assertEqual(sum(case["supported"] is False for case in cases), 12)
         for case in cases:
+            if "context_records" in case:
+                self.assertTrue(resolved_judge_question(case["resolved_request"]))
+                for item in case["context_records"]:
+                    self.assertIn("Exact source record:", judge_context(item))
             for evidence_id in re.findall(r"\[([^\]]+)\]", case["answer"]):
                 self.assertIn(evidence_id, case["context"], case["id"])
+
+    def test_faithfulness_receives_resolved_question_and_preserves_original_input(self):
+        class Judge:
+            async def score(self, question, response, contexts):
+                self.question, self.contexts = question, contexts
+                return {"state": "SCORED", "value": 1}
+
+        _, _, outcome = example()
+        outcome["resolved_request"].update(intent="COUNT", period="2026-09")
+        judge = Judge()
+        result = asyncio.run(score_faithfulness(judge, "Keep the authorized queue and give its total.", outcome))
+        self.assertIn("intake queue in 2026-09", judge.question)
+        self.assertNotIn("authorized", judge.question)
+        self.assertEqual(result["original_user_input"], "Keep the authorized queue and give its total.")
+        self.assertIn("Exact source record:", judge.contexts[0])
+
+    def test_readable_evidence_keeps_raw_records_and_does_not_expand_partial_period(self):
+        from conversational_analytics_agent.tools import canonical
+        _, _, outcome = example()
+        item = outcome["receipts"][0]["result"]["evidence"][0]
+        rendered = judge_context(item)
+        self.assertIn(canonical(item), rendered)
+        self.assertIn("120 cases", rendered)
+        self.assertIn("intake queue in 2026-09", rendered)
+        partial = {**item, "start_date": "2026-09-02"}
+        self.assertIn("from 2026-09-02 inclusive", judge_context(partial))
+        self.assertNotIn("queue in 2026-09,", judge_context(partial))
 
     def test_independent_checks_reject_wrong_number_with_valid_citation(self):
         caller, label, outcome = example()
