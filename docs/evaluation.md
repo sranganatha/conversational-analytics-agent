@@ -10,10 +10,10 @@ enter agent requests.
 
 ```sh
 make test-container
-make calibrate-judge
-make evaluate-development
-make evaluate-regression
-make evaluate-ragas
+make calibrate-judge EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-development EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-regression EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-ragas EVALUATION_OUTPUT=artifacts/local-run
 make model-down
 ```
 
@@ -22,10 +22,13 @@ evaluation image pins Ragas 0.4.3 and compatible dependencies. Container tests d
 networking; live evaluation uses the private Ollama network. LangChain Community 0.4.1
 is pinned because 0.4.2 removed a module imported by Ragas.
 
-Current commands write `artifacts/task-contracts-v2/`. Original rejected reports remain
-at the artifact root. `EVALUATION_OUTPUT` selects a deliberate separate experiment
-directory; archive previous attempts before rerunning. A rerun starts from the beginning,
-not from a favorable subset. Model verification also writes separate current evidence.
+The commands above write `artifacts/local-run/`, preserving the checked-in evidence.
+Use the same output directory for every stage. Without an override, evaluation commands
+write `artifacts/task-contracts-v2/`, which contains the corrected recorded comparison.
+Original rejected reports remain at the artifact root. Archive previous attempts before
+reusing an output directory. A rerun starts from the beginning, not from a favorable
+subset. For a separate smoke transcript, use
+`make verify-model VERIFY_OUTPUT=artifacts/local-run`.
 
 ## Data and prerequisites
 

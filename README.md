@@ -80,7 +80,7 @@ The CLI supplies a fixed caller allowed to read both synthetic queues and does n
 authenticate external users. Every read rechecks scope and retrieves current evidence.
 
 ```sh
-make verify-model
+make verify-model VERIFY_OUTPUT=artifacts/local-run
 make model-down
 ```
 
@@ -91,12 +91,16 @@ Run `make model-down` after live commands, including failed or interrupted runs.
 ## Evaluate
 
 ```sh
-make calibrate-judge
-make evaluate-development
-make evaluate-regression
-make evaluate-ragas
+make calibrate-judge EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-development EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-regression EVALUATION_OUTPUT=artifacts/local-run
+make evaluate-ragas EVALUATION_OUTPUT=artifacts/local-run
 make model-down
 ```
+
+The output overrides above preserve the checked-in reports. Use the same directory
+for calibration and all evaluation stages; preserve an existing run before reusing
+its directory. Without overrides, live commands write to `artifacts/task-contracts-v2/`.
 
 The separate evaluation image adds pinned Ragas dependencies without expanding the
 chat runtime. Twenty-four hand-labeled development answers calibrate the judge. A paired
@@ -130,7 +134,9 @@ Citation presence alone does not establish correctness. Incompatible model actio
 unsupported typed claims fail validation; at most one visible repair per stage is
 allowed within the turn budget. The supported vocabulary and source facts remain bounded.
 The Ragas judge uses the same model weights, so calibration does not eliminate
-correlated errors. The small synthetic corpus does not establish production quality.
+correlated errors. The holdout was authored by the implementer and is not independently
+blind. Fixed-setting repetitions are not independent statistical samples. The small
+synthetic corpus does not establish production quality.
 
 This is a single-host, monthly analytics reference with two approved metric templates.
 It does not provide general SQL generation, external user authentication, distributed
