@@ -124,6 +124,11 @@ judge results. The judge uses the same model weights as answer generation, so it
 scores have a self-judging limitation. See [evaluation details](docs/evaluation.md)
 for metrics, input freezing, coverage, and the comparison policy.
 
+The recorded [holdout comparison](artifacts/evaluation-holdout.md) is **REJECTED**.
+The conversational configuration completes more exact turns than the baseline, but
+fails count requests and tool-selection checks. See [the findings](docs/evaluation-findings.md)
+for an example where full faithfulness still accompanies the wrong answer task.
+
 ## Answer boundaries
 
 Answers cite the current tool evidence. Citation validation and numerical-token checks

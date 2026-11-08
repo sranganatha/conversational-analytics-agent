@@ -56,6 +56,9 @@ Ragas 0.4.3 exposes ID-based retrieval metrics through its sample API. Tool-call
 faithfulness metrics use the collections API. No legacy LLM wrapper is used. Search
 wording has no single expected phrasing, so it is excluded from tool-argument matching;
 queue/date arguments and metric IDs are retained. Raw requests remain in the transcript.
+The dialogue metric compares the ordered call sequence; independent per-turn checks
+also retain turn boundaries so a correct call made on the wrong turn cannot count as
+an exact successful turn.
 Faithfulness uses statement extraction followed by entailment checking. Missing,
 changed, or non-finite judge claims become explicit errors, with no repair retry.
 
@@ -64,6 +67,12 @@ It is recorded rather than dropped. Clarifications and abstentions are excluded 
 faithfulness only; their status agreement, incorrect abstentions, and errors remain in
 the full turn counts. Per-dialogue records preserve paired results rather than hiding
 them behind a single mean.
+
+A numeric failure means an answered turn did not fulfill its independently labeled
+count request. This includes a missing aggregate, wrong scope/period/metric, missing
+required citation, omitted count, or unsupported numeric token. It does not mean every
+failure was an arithmetic mistake. A procedure-only answer to a count question can
+be faithful to its retrieved text while failing both the task and numeric checks.
 
 ## Decision and limits
 

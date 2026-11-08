@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import re
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,6 +9,7 @@ from tempfile import TemporaryDirectory
 from conversational_analytics_agent.contracts import Caller
 from conversational_analytics_agent.evaluate import run_dialogue
 from conversational_analytics_agent.evaluation import comparison_verdict, independent_checks, summarize
+from conversational_analytics_agent.fixtures import load_json
 from conversational_analytics_agent.ragas_metrics import LocalJudge, dialogue_tools, retrieval_scores
 from conversational_analytics_agent.store import SessionStore
 from conversational_analytics_agent.tools import EvidenceTools
@@ -29,6 +31,16 @@ def example():
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_calibration_citation_identities_exist_in_supplied_context(self):
+        root = Path(__file__).resolve().parent.parent
+        cases = load_json(root / "config" / "judge-calibration.json")["cases"]
+        self.assertEqual(len({case["id"] for case in cases}), 12)
+        self.assertEqual(sum(case["supported"] is True for case in cases), 6)
+        self.assertEqual(sum(case["supported"] is False for case in cases), 6)
+        for case in cases:
+            for evidence_id in re.findall(r"\[([^\]]+)\]", case["answer"]):
+                self.assertIn(evidence_id, case["context"], case["id"])
+
     def test_independent_checks_reject_wrong_number_with_valid_citation(self):
         caller, label, outcome = example()
         self.assertTrue(independent_checks(label, outcome, caller)["exact_success"])
