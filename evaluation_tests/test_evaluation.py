@@ -134,6 +134,12 @@ class EvaluationTests(unittest.TestCase):
                 for mode in ("baseline", "conversational") for rep in range(3) for index in range(12)]
         self.assertEqual(comparison_verdict(rows, True, 3), "NO_CLEAR_GAIN")
         self.assertEqual(comparison_verdict(rows, False, 3), "INSUFFICIENT_EVIDENCE")
+        for row in rows:
+            if row["mode"] == "baseline" and row["dialogue_id"] == "0":
+                row["turns"][0]["checks"]["exact_success"] = False
+        self.assertEqual(comparison_verdict(rows, True, 3), "IMPROVED")
+        rows[-1]["turns"][0]["faithfulness"]["state"] = "NOT_APPLICABLE"
+        self.assertEqual(comparison_verdict(rows, True, 3), "INSUFFICIENT_EVIDENCE")
         rows[-1]["turns"][0]["checks"]["numeric_correct"] = False
         self.assertEqual(comparison_verdict(rows, False, 3), "REJECTED")
 

@@ -101,7 +101,9 @@ def comparison_verdict(rows: list[dict[str, Any]], calibration_passed: bool, rep
     all_turns = [turn for group in groups.values() for row in group for turn in row["turns"]]
     if not complete or not calibration_passed or any(
         turn["outcome"]["answer"]["status"] == "ERROR" or
-        turn["faithfulness"]["state"] == "ERROR" for turn in all_turns):
+        turn["faithfulness"]["state"] == "ERROR" or
+        (turn["outcome"]["answer"]["status"] == "ANSWERED" and turn["faithfulness"]["state"] != "SCORED")
+        for turn in all_turns):
         return "INSUFFICIENT_EVIDENCE"
     if any(turn["faithfulness"]["state"] == "SCORED" and turn["faithfulness"]["value"] < 1
            for turn in candidate):
