@@ -1,0 +1,42 @@
+{
+  "fingerprints": {
+    "Containerfile": "465da26f6082213d14e4fb18091d43ddc80ae7c582afcf653091dec1e7934d3a",
+    "Containerfile.evaluation": "cfb0ffee85d9df0979f6694a1fae5ee2dda9a8260c99903fe0e33cfd51062236",
+    "config/evaluation.json": "9bb6a84e852fb259cbfb567d0cccff08463f82d67f1f909efb9496e6e9660894",
+    "config/judge-calibration.json": "ec0b9d182bfa1f682194e203a850950a9586e50ccd7061557b2afdd2cc2b66b4",
+    "config/model.json": "a56add68e56d6e5f8107f8b19c101bf05ac09fc8014889f8024cb264161cebbe",
+    "conversational_analytics_agent/__init__.py": "4fcad95729c92b324f81bdf45e11346dbdbeaecc01e5fb685950d9310862b6fa",
+    "conversational_analytics_agent/agent.py": "2b10730b014acee5d88ae6299573c3a5d14ea1a19d91bf3b0865f6436f90eb41",
+    "conversational_analytics_agent/chat.py": "5a837448a31ce8c7ac507c3b844a3b02001dc4d47712b1e97828fc80b48e2b7f",
+    "conversational_analytics_agent/contracts.py": "2eb908a65c39a3b21dcfa3c5e5e49c64e03fd92885b1fe4ceb273a898ff029c7",
+    "conversational_analytics_agent/demo.py": "cabdffdf969fe6fbe87cb08980f40ff311b5103495298a4130038e04dacdfe3c",
+    "conversational_analytics_agent/evaluate.py": "fd08c499b83f9cc8a5f1115964af969d195dc2a8790f4ea9aa23153ed67d478e",
+    "conversational_analytics_agent/evaluation.py": "35f7655abf82e1e5625e2fbe2d38aec64314dc87ddb7e585e6446dc7d7607fcd",
+    "conversational_analytics_agent/fixtures.py": "2bb931d83b08957ba15f5a4e0fb687b278fd2365293d092a81e73fbdaa004622",
+    "conversational_analytics_agent/model.py": "ce509507cb8c47987c14acf33ba5a3722e70efbc9c3b57639b5d07c05480e5dd",
+    "conversational_analytics_agent/prepare.py": "f4cf885f79669e193e3f8da43dcbec2c6da25de4a17d53b4afc360c7c21fd6a2",
+    "conversational_analytics_agent/ragas_metrics.py": "fc1ce05e0fc4593d8895856a7557b16248fa2632c7b918536146628093ae038b",
+    "conversational_analytics_agent/store.py": "9a0ab2f776047eac140375efa004dd87ef1aa702e53b1f995f0485a568190337",
+    "conversational_analytics_agent/tools.py": "467b716028d74399a4c9ba6c43270bf900994d34b6944daf6215d4df66c724d6",
+    "conversational_analytics_agent/verify_model.py": "8710d6a0908fce9cdbe9040904f2b7d6264f63c36142eafb558c53af870fcf92",
+    "fixtures/daily.csv": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65",
+    "fixtures/dialogues.jsonl": "91d1f7d1d459d44413bc26cca7764365580ce28af7f557c9600785e2bd747c0a",
+    "fixtures/expected-totals.json": "9ab7a17c16e889c431ffb4d3f6e7af276d88df7df9751b5e13d0a913c0abfc8c",
+    "fixtures/manifest.json": "3b9a096a923084b8e91bd8ccf9ca34eba5abf71c1aafa4cff2b199d6c29b3494",
+    "fixtures/metrics.json": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+    "fixtures/procedures.json": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+    "fixtures/retrieval-sample.json": "1c96a3730b65b6ba048e33d82c321dffed7654fc9208bbe96d8d4e35c8c8fea5",
+    "requirements-evaluation.lock": "b66575991b4f9a9115ff12bb57863f346e21264adcf2f1f67286c951e69eb667",
+    "requirements.lock": "d2f31f2f60800370ceaff9b508688a9e4e635e7df0aedd528b4e417b1286a82e"
+  },
+  "policy": {
+    "calibration_required_matches": 12,
+    "faithfulness_required_score": 1.0,
+    "holdout_repetitions": 3,
+    "judge_identity": "Same pinned local model as answer generation, with separate Ragas prompts; self-judging limitation applies.",
+    "judge_max_calls": 2,
+    "judge_timeout_seconds": 60,
+    "policy": "Any candidate scope or numeric failure rejects. Missing runs, errors, or failed calibration mean insufficient evidence. Otherwise any unsupported candidate answer rejects. Improvement requires more exact successes with no status or supported-answer regression in every repetition.",
+    "version": 1
+  }
+}

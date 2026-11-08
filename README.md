@@ -106,6 +106,29 @@ Stopping it retains the named model cache for reuse. Chat session data is tempor
 verification preserves its visible transcript in the report. No project packages are
 installed on the host.
 
+## Evaluate conversations
+
+Ragas and independent checks compare the conversational agent with its baseline:
+
+```sh
+make calibrate-judge
+make evaluate-development
+make evaluate-ragas
+make model-down
+```
+
+The commands record judge calibration, development results, and three paired holdout
+repetitions under `artifacts/`. They use an additional evaluation image; the chat
+runtime does not require Ragas. Reports retain abstentions, runtime errors, and missing
+judge results. The judge uses the same model weights as answer generation, so its
+scores have a self-judging limitation. See [evaluation details](docs/evaluation.md)
+for metrics, input freezing, coverage, and the comparison policy.
+
+The recorded [holdout comparison](artifacts/evaluation-holdout.md) is **REJECTED**.
+The conversational configuration completes more exact turns than the baseline, but
+fails count requests and tool-selection checks. See [the findings](docs/evaluation-findings.md)
+for an example where full faithfulness still accompanies the wrong answer task.
+
 ## Answer boundaries
 
 Answers cite the current tool evidence. Citation validation and numerical-token checks
