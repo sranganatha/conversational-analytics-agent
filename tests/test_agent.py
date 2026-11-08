@@ -79,6 +79,7 @@ class AgentTests(unittest.TestCase):
         self.assertNotIn("required_claims", payload)
         self.assertEqual(payload["required_roles"], [{"kind": "count", "unit": "cases"}])
         self.assertTrue(payload["current_evidence"])
+        self.assertEqual(model.schemas[0]["properties"]["action"]["enum"], ["COUNT", "CLARIFY", "ABSTAIN"])
         claim_schema = model.schemas[1]["properties"]["claims"]
         self.assertEqual(claim_schema["maxItems"], 1)
         self.assertEqual(claim_schema["items"]["properties"]["kind"]["enum"], ["count"])

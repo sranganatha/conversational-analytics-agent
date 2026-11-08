@@ -218,8 +218,10 @@ class ConversationAgent:
                         "period": slots["period"], "tools": [], "intent": intent, "message": clarification}
                 return {"plan": plan, "calls": [], "receipts": []}
             payload = {"message": state["message"], "required_task": intent, "resolved_slots": slots}
+            schema = deepcopy(MODEL_PLAN_SCHEMA)
+            schema["properties"]["action"]["enum"] = [intent, "CLARIFY", "ABSTAIN"]
             for repair in range(2):
-                raw = generate("plan_repair" if repair else "plan", PLANNER, payload, MODEL_PLAN_SCHEMA)
+                raw = generate("plan_repair" if repair else "plan", PLANNER, payload, schema)
                 record(raw, {"action", "message"})
                 require(type(raw["action"]) is str and raw["action"] in {*TASK_TOOLS, "CLARIFY", "ABSTAIN"}, "MODEL_SCHEMA_ERROR")
                 proposal = {"decision": "LOOKUP" if raw["action"] in TASK_TOOLS else raw["action"],
