@@ -1,35 +1,41 @@
 # Conversational Analytics Agent
 
-Conversational questions over service procedures and operational metrics, with cited evidence.
+[![CI](https://github.com/sranganatha/conversational-analytics-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/sranganatha/conversational-analytics-agent/actions/workflows/ci.yml)
 
-The synthetic dataset connects escalation rules with daily service counts for two queues.
-It supports questions such as which rule applies to a period, how many cases breached
-that rule, and how a follow-up changes the queue or date range.
+A bounded conversational assistant over synthetic service procedures and operational
+counts, evaluated for retrieval, tool use, evidence support, and conversation handling.
 
-## Included
+> A faithful statement can still answer the wrong question. Evaluate the selected
+> tools, dates, and results as well as the answer's citations.
 
-- Twelve versioned procedure records with queue scope and effective dates
-- Daily counts for August and September 2026, with independently specified monthly totals
-- A metric catalog defining first-response and resolution breaches
-- Twenty-four four-turn evaluation dialogues, split into twelve development and twelve holdout cases
-- SQLite FTS5 procedure search filtered by queue scope and effective dates
-- Read-only DuckDB metric queries with exact totals and applicable threshold evidence
-- Owner-bound SQLite sessions with version checks, expiry, and a six-turn limit
-- Append-only tool receipts tied to the request and source digests
-- Active evidence invalidation when the selected queue, dates, or metric changes
-- A bounded LangGraph workflow that selects read tools, clarifies ambiguity, and composes answers from fresh evidence
-- A current-message-only baseline using the same model, tools, and prompts without conversation history
-- A pinned local Qwen model served by Ollama in Podman
-- Validated caller, session, read-tool, answer, and retrieval-evaluation records
-- Offline checks for fixture integrity, split isolation, evidence references, and aggregate totals
+## Workflow
 
-The local assistant resolves monthly follow-ups and generates cited answers. The
-deterministic demo exercises fixed tool requests separately from model behavior.
+```text
+Caller scope + owner-bound session + message
+    -> resolve queue, metric, and month
+    -> model selects validated read tools
+    -> applicable procedures and exact aggregates
+    -> cited answer, clarification, abstention, or visible error
+    -> saved outcome and immutable receipts
+
+Paired baseline/conversation runs -> independent checks + Ragas -> comparison report
+```
+
+The corpus contains twelve versioned procedure records, 122 daily aggregate records
+for August and September 2026, and twenty-four four-turn dialogues split evenly between
+development and holdout with disjoint scenario families. Metrics cover first-response
+and resolution breaches for intake and review queues. All data is synthetic.
+
+The model chooses procedure search, metric reads, both tools, or a non-answer outcome.
+Application code owns caller authority, calendar boundaries, parameterized SQL,
+execution budgets, and evidence validation. SQLite FTS5 provides lexical procedure
+search; read-only DuckDB templates provide analytical results. LangGraph coordinates
+the small workflow. No SQL supplied by the model executes.
 
 ## Validate
 
-Requires Git, Make, and a running Podman machine. Project checks execute inside the
-container and install no host packages:
+Requires Git, Make, a running Podman machine, and Podman Compose for live model commands.
+Project packages install only inside images:
 
 ```sh
 git clone https://github.com/sranganatha/conversational-analytics-agent.git
@@ -38,77 +44,48 @@ make test-container
 make demo
 ```
 
-The command builds the image, runs fixture validation, and executes the tests with
-container networking disabled. A successful validation prints:
+Checks validate contracts, fixture integrity, split isolation, tools, sessions, graph
+failures, and evaluator behavior with networking disabled during container execution.
+`make demo` exercises fixed tool requests and SQLite persistence without model calls.
+It verifies intake first-response counts of 120 in September and 93 in August, and
+review counts of 62 first-response and 31 resolution breaches in August.
 
-```text
-Validated 12 procedures, 122 daily records, and 24 dialogues (12 development, 12 holdout).
-```
+`make check` validates fixtures; `make test` runs the runtime tests. Initial image
+builds require network access for pinned images and hash-verified wheels. Dependency
+locks target Linux amd64 and Python 3.12. Snapshot preparation reads source procedures,
+metric definitions, and daily counts without loading evaluation labels.
 
-`make check` runs fixture validation; `make test` runs the tests. Both use Podman.
-Initial image builds require network access to fetch the pinned Python image and
-hash-verified dependency wheels. The lock targets the Python 3.12 Linux amd64 container.
-Snapshot preparation uses only the procedure, metric,
-and daily-count source files, without loading evaluation labels.
-
-## Tool demonstration
-
-`make demo` runs procedure search and metric queries inside an isolated temporary
-session. It verifies these results:
-
-| Selection | First-response breaches | Resolution breaches |
-|---|---:|---:|
-| Intake, September 2026 | 120 | Not requested |
-| Intake, August 2026 | 93 | Not requested |
-| Review, August 2026 | 62 | 31 |
-
-The demonstration also checks that old selections lose active evidence, identical
-reads have identical receipt digests, unauthorized reads fail, and persisted turns
-survive a store reopen. Temporary session data is removed when the demo exits.
-No model calls, credentials, or host data files are required.
-
-## Local conversation
-
-With Podman Compose support available:
+## Ask questions
 
 ```sh
 make chat
 ```
 
-Try these questions in order:
+Try:
 
 1. For the intake queue in September 2026, what is the first-response rule?
 2. How many cases exceeded it that month?
 3. And the previous month?
 4. What about the review queue?
 
-The assistant checks scope on every read and retrieves fresh evidence for each turn.
-The model selects a month; application code calculates its exact calendar boundaries.
-Ambiguous questions can return a clarification rather than a count. A session accepts
-at most six turns and ends when you enter `quit`. The local caller can read both
-synthetic queues; this CLI does not authenticate external users.
+The pinned Qwen3 1.7B model runs through Ollama on the container network without a
+published host port. The first run downloads approximately 1.4 GB. Its artifact digest
+must match [model.json](config/model.json); mismatches fail visibly.
 
-The first run downloads approximately 1.4 GB of model data. Model identity is checked
-against [the pinned configuration](config/model.json). A digest mismatch fails visibly.
-The model service uses a private container network without publishing a host port.
-
-Run the separately labeled smoke verification and stop the service with:
+A session accepts six turns. Enter `quit` to exit; chat session data is temporary.
+The CLI supplies a fixed caller allowed to read both synthetic queues and does not
+authenticate external users. Every read rechecks scope and retrieves current evidence.
 
 ```sh
 make verify-model
 make model-down
 ```
 
-Verification writes a JSON transcript and Markdown summary under `artifacts/`.
-See the recorded [local-model verification](artifacts/model-verification.md).
-The service stays running until `make model-down`, including after verification failure.
-Stopping it retains the named model cache for reuse. Chat session data is temporary;
-verification preserves its visible transcript in the report. No project packages are
-installed on the host.
+The seven-turn [model smoke verification](artifacts/model-verification.md) is separate
+from the larger quality experiment. Stopping the service retains its named model cache.
+Run `make model-down` after live commands, including failed or interrupted runs.
 
-## Evaluate conversations
-
-Ragas and independent checks compare the conversational agent with its baseline:
+## Evaluate
 
 ```sh
 make calibrate-judge
@@ -117,27 +94,39 @@ make evaluate-ragas
 make model-down
 ```
 
-The commands record judge calibration, development results, and three paired holdout
-repetitions under `artifacts/`. They use an additional evaluation image; the chat
-runtime does not require Ragas. Reports retain abstentions, runtime errors, and missing
-judge results. The judge uses the same model weights as answer generation, so its
-scores have a self-judging limitation. See [evaluation details](docs/evaluation.md)
-for metrics, input freezing, coverage, and the comparison policy.
+The separate evaluation image adds pinned Ragas dependencies without expanding the
+chat runtime. Twelve hand-labeled development answers calibrate the judge. A paired
+development run precedes three frozen holdout repetitions. The baseline and candidate
+share model, prompts, tools, corpus, and budgets; conversation history and saved
+selection are the difference.
 
-The recorded [holdout comparison](artifacts/evaluation-holdout.md) is **REJECTED**.
-The conversational configuration completes more exact turns than the baseline, but
-fails count requests and tool-selection checks. See [the findings](docs/evaluation-findings.md)
-for an example where full faithfulness still accompanies the wrong answer task.
+Reports retain runtime errors, wrong tool choices, clarification, abstention, missing
+judge outcomes, and coverage. Ragas scores retrieval IDs, dialogue tool trajectories,
+and per-answer faithfulness. Independent checks validate status, scope, dates, metric,
+required evidence, and expected count results.
 
-## Answer boundaries
+Read the [holdout report](artifacts/evaluation-holdout.md),
+[development report](artifacts/evaluation-development.md),
+[method and decision policy](docs/evaluation.md), and
+[findings](docs/evaluation-findings.md). The recorded verdict describes this finite
+experiment; a high average score cannot override a failed acceptance rule.
 
-Answers cite the current tool evidence. Citation validation and numerical-token checks
-reject some malformed or unsupported outputs, but do not prove semantic correctness.
-The local-model smoke run is separate from held-out evaluation and does not establish
-general answer quality. Default tests and CI make no model calls.
+The recorded verdict is **REJECTED**. Conversation state increased exact successful
+turns, but the selected model failed count requests and tool-selection checks. The
+findings explain a fully faithful procedure answer that still fails a count question.
 
-## Data and contracts
+## Boundaries
 
-See [the data contract](docs/data-contract.md) for tool arguments, metric definitions,
-session rules, answer statuses, and the evaluation record format.
-All records are synthetic. Fixture expectations validate data integrity, not real-model performance.
+Citation presence and numeric-token checks do not prove semantic correctness. The
+selected model can choose an allowed but incorrect tool or answer the wrong task.
+The Ragas judge uses the same model weights, so calibration does not eliminate
+correlated errors. The small synthetic corpus does not establish production quality.
+
+This is a single-host, monthly analytics reference with two approved metric templates.
+It does not provide general SQL generation, external user authentication, distributed
+availability, or arbitrary business analytics. Model calls have explicit limits and
+no automatic retry or fallback. Default tests and CI make no model calls.
+
+See [architecture](docs/architecture.md), [data contracts](docs/data-contract.md),
+[security boundaries](docs/security.md), [operations](docs/runbook.md), and the
+[turn-claim decision](docs/adr/0001-bounded-turn-claims.md).
