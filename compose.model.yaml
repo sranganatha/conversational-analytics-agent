@@ -47,6 +47,17 @@ services:
     tty: true
     command: ["python", "-m", "conversational_analytics_agent.chat"]
 
+  evaluation:
+    extends:
+      service: verify
+    image: conversational-analytics-agent:evaluation
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      RAGAS_DO_NOT_TRACK: "true"
+      SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+    entrypoint: ["python", "-m", "conversational_analytics_agent.evaluate"]
+    command: ["development"]
+
 volumes:
   models:
     name: conversational-analytics-agent-models

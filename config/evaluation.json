@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "holdout_repetitions": 3,
+  "judge_timeout_seconds": 60,
+  "judge_max_calls": 2,
+  "calibration_required_matches": 12,
+  "faithfulness_required_score": 1.0,
+  "policy": "Any candidate scope or numeric failure rejects. Missing runs, errors, or failed calibration mean insufficient evidence. Otherwise any unsupported candidate answer rejects. Improvement requires more exact successes with no status or supported-answer regression in every repetition.",
+  "judge_identity": "Same pinned local model as answer generation, with separate Ragas prompts; self-judging limitation applies."
+}
