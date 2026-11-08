@@ -2,6 +2,7 @@
 
 import re
 import time
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, TypedDict
 
@@ -265,12 +266,17 @@ class ConversationAgent:
             context = list(evidence.values())
             require(len(canonical(context)) <= MAX_CONTEXT_CHARS, "CONTEXT_LIMIT")
             facts = required_claims(plan, context)
+            schema = deepcopy(ANSWER_SCHEMA)
+            schema["properties"]["claims"]["maxItems"] = len(facts)
+            properties = schema["properties"]["claims"]["items"]["properties"]
+            properties["kind"]["enum"] = sorted({item["kind"] for item in facts})
+            properties["unit"]["enum"] = sorted({item["unit"] for item in facts})
             payload = {"question": request.message, "queue": plan["queue"], "period": plan["period"],
                        "metric_id": plan["metric_id"],
                        "required_roles": [{"kind": item["kind"], "unit": item["unit"]} for item in facts],
                        "current_evidence": context}
             for repair in range(2):
-                result = generate("answer_repair" if repair else "answer", COMPOSER, payload, ANSWER_SCHEMA)
+                result = generate("answer_repair" if repair else "answer", COMPOSER, payload, schema)
                 try:
                     answer = {**grounded_answer(result, plan, facts), "tool_calls": list(executed)}
                     validate_turn(answer, caller, set(evidence))

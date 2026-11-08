@@ -37,9 +37,11 @@ class ScriptedModel:
     def __init__(self, replies):
         self.replies = iter(replies)
         self.prompts = []
+        self.schemas = []
 
     def generate(self, messages, schema, timeout):
         self.prompts.append(copy.deepcopy(messages))
+        self.schemas.append(copy.deepcopy(schema))
         reply = next(self.replies)
         if isinstance(reply, Exception):
             raise reply
@@ -77,6 +79,9 @@ class AgentTests(unittest.TestCase):
         self.assertNotIn("required_claims", payload)
         self.assertEqual(payload["required_roles"], [{"kind": "count", "unit": "cases"}])
         self.assertTrue(payload["current_evidence"])
+        claim_schema = model.schemas[1]["properties"]["claims"]
+        self.assertEqual(claim_schema["maxItems"], 1)
+        self.assertEqual(claim_schema["items"]["properties"]["kind"]["enum"], ["count"])
 
     def test_validated_selection_is_available_without_prior_answer_prose(self):
         self.run_turn(ScriptedModel([plan(), answer()]), message="Count intake first-response breaches in September 2026.")
