@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "split": "development",
-  "label_method": "Hand-authored entailment labels from the frozen development procedure and monthly-total facts. Each pair differs in one factual claim. Citation IDs do not establish support.",
+  "label_method": "Twenty-four hand-labeled development controls: original citation/number negatives plus representative resolved follow-up questions and exact structured source records. The supported flag never enters judge inputs.",
   "cases": [
     {
       "id": "september-rule-supported",
@@ -85,6 +85,370 @@
       "question": "When is the intake first-response threshold breached?",
       "context": "Count a first-response breach only when elapsed time exceeds 2 hours. Equality is not a breach.",
       "answer": "A first response at exactly 2 hours is a breach.",
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "COUNT",
+        "queue": "review",
+        "period": "2026-08"
+      },
+      "id": "resolved-previous-count-supported",
+      "answer": "For the review queue in 2026-08, the first-response breach count is 62 cases.",
+      "question": "And during the previous month?",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:review:first_response_breaches:2026-08",
+          "numerator": 62,
+          "end_date": "2026-09-01",
+          "value": 62,
+          "queue": "review",
+          "metric_id": "first_response_breaches",
+          "denominator": 248,
+          "start_date": "2026-08-01"
+        },
+        {
+          "evidence_id": "review-response-08",
+          "queue": "review",
+          "effective_from": "2026-08-01",
+          "effective_to": "2026-09-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 8,
+          "text": "For the review queue, first response must occur within 8 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "COUNT",
+        "queue": "review",
+        "period": "2026-08"
+      },
+      "id": "resolved-previous-count-wrong",
+      "answer": "For the review queue in 2026-08, the first-response breach count is 63 cases.",
+      "question": "And during the previous month?",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:review:first_response_breaches:2026-08",
+          "numerator": 62,
+          "end_date": "2026-09-01",
+          "value": 62,
+          "queue": "review",
+          "metric_id": "first_response_breaches",
+          "denominator": 248,
+          "start_date": "2026-08-01"
+        },
+        {
+          "evidence_id": "review-response-08",
+          "queue": "review",
+          "effective_from": "2026-08-01",
+          "effective_to": "2026-09-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 8,
+          "text": "For the review queue, first response must occur within 8 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "COUNT",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-period-update-supported",
+      "answer": "For the intake queue in 2026-09, the first-response breach count is 120 cases.",
+      "question": "Update the interval to September 2026.",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+          "numerator": 120,
+          "end_date": "2026-10-01",
+          "value": 120,
+          "queue": "intake",
+          "metric_id": "first_response_breaches",
+          "denominator": 360,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "COUNT",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-period-update-wrong",
+      "answer": "For the intake queue in 2026-09, the first-response breach count is 121 cases.",
+      "question": "Update the interval to September 2026.",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+          "numerator": 120,
+          "end_date": "2026-10-01",
+          "value": 120,
+          "queue": "intake",
+          "metric_id": "first_response_breaches",
+          "denominator": 360,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "resolution_breaches",
+        "intent": "COUNT",
+        "queue": "review",
+        "period": "2026-09"
+      },
+      "id": "resolved-authorized-total-supported",
+      "answer": "For the review queue in 2026-09, the resolution breach count is 30 cases.",
+      "question": "Keep the authorized queue and give its resolution total.",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:review:resolution_breaches:2026-09",
+          "numerator": 30,
+          "end_date": "2026-10-01",
+          "value": 30,
+          "queue": "review",
+          "metric_id": "resolution_breaches",
+          "denominator": 300,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "review-resolution-09",
+          "queue": "review",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "resolution_breaches",
+          "threshold_hours": 48,
+          "text": "For the review queue, resolution must occur within 48 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "resolution_breaches",
+        "intent": "COUNT",
+        "queue": "review",
+        "period": "2026-09"
+      },
+      "id": "resolved-authorized-total-wrong",
+      "answer": "For the review queue in 2026-09, the resolution breach count is 31 cases.",
+      "question": "Keep the authorized queue and give its resolution total.",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:review:resolution_breaches:2026-09",
+          "numerator": 30,
+          "end_date": "2026-10-01",
+          "value": 30,
+          "queue": "review",
+          "metric_id": "resolution_breaches",
+          "denominator": 300,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "review-resolution-09",
+          "queue": "review",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "resolution_breaches",
+          "threshold_hours": 48,
+          "text": "For the review queue, resolution must occur within 48 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "RULE",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-queue-switch-supported",
+      "answer": "For the intake queue in 2026-09, the first-response deadline is 2 hours.",
+      "question": "Switch to intake, keeping the month. What deadline applies?",
+      "context_records": [
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "RULE",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-queue-switch-wrong",
+      "answer": "For the intake queue in 2026-09, the first-response deadline is 4 hours.",
+      "question": "Switch to intake, keeping the month. What deadline applies?",
+      "context_records": [
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "resolution_breaches",
+        "intent": "RULE",
+        "queue": "review",
+        "period": "2026-08"
+      },
+      "id": "resolved-date-rule-supported",
+      "answer": "For the review queue in 2026-08, the resolution deadline is 72 hours.",
+      "question": "Use August 2026 and first tell me the resolution deadline.",
+      "context_records": [
+        {
+          "evidence_id": "review-resolution-08",
+          "queue": "review",
+          "effective_from": "2026-08-01",
+          "effective_to": "2026-09-01",
+          "metric_id": "resolution_breaches",
+          "threshold_hours": 72,
+          "text": "For the review queue, resolution must occur within 72 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "resolution_breaches",
+        "intent": "RULE",
+        "queue": "review",
+        "period": "2026-08"
+      },
+      "id": "resolved-date-rule-wrong",
+      "answer": "For the review queue in 2026-08, the resolution deadline is 48 hours.",
+      "question": "Use August 2026 and first tell me the resolution deadline.",
+      "context_records": [
+        {
+          "evidence_id": "review-resolution-08",
+          "queue": "review",
+          "effective_from": "2026-08-01",
+          "effective_to": "2026-09-01",
+          "metric_id": "resolution_breaches",
+          "threshold_hours": 72,
+          "text": "For the review queue, resolution must occur within 72 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": false
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "BOTH",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-mixed-supported",
+      "answer": "For the intake queue in 2026-09, the first-response deadline is 2 hours. For the intake queue in 2026-09, the first-response breach count is 120 cases.",
+      "question": "What are its rule and count?",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+          "numerator": 120,
+          "end_date": "2026-10-01",
+          "value": 120,
+          "queue": "intake",
+          "metric_id": "first_response_breaches",
+          "denominator": 360,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
+      "supported": true
+    },
+    {
+      "resolved_request": {
+        "metric_id": "first_response_breaches",
+        "intent": "BOTH",
+        "queue": "intake",
+        "period": "2026-09"
+      },
+      "id": "resolved-mixed-wrong",
+      "answer": "For the intake queue in 2026-09, the first-response deadline is 2 hours. For the intake queue in 2026-09, the first-response breach count is 121 cases.",
+      "question": "What are its rule and count?",
+      "context_records": [
+        {
+          "unit": "cases",
+          "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+          "numerator": 120,
+          "end_date": "2026-10-01",
+          "value": 120,
+          "queue": "intake",
+          "metric_id": "first_response_breaches",
+          "denominator": 360,
+          "start_date": "2026-09-01"
+        },
+        {
+          "evidence_id": "intake-response-09",
+          "queue": "intake",
+          "effective_from": "2026-09-01",
+          "effective_to": "2026-10-01",
+          "metric_id": "first_response_breaches",
+          "threshold_hours": 2,
+          "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold."
+        }
+      ],
       "supported": false
     }
   ]

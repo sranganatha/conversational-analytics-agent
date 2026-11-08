@@ -115,8 +115,8 @@ def validate_daily(rows: list[dict[str, Any]], expected: Any) -> dict[str, dict[
 
 
 def validate_dialogues(dialogues: list[Any], evidence: dict[str, dict[str, Any]],
-                       aggregates: dict[str, dict[str, Any]]) -> None:
-    require(len(dialogues) == 24, "INVALID_DIALOGUE_COUNT")
+                       aggregates: dict[str, dict[str, Any]], *, validation: bool = False) -> None:
+    require(len(dialogues) == (12 if validation else 24), "INVALID_DIALOGUE_COUNT")
     families: dict[str, str] = {}
     identities: set[str] = set()
     counts: Counter = Counter()
@@ -145,9 +145,14 @@ def validate_dialogues(dialogues: list[Any], evidence: dict[str, dict[str, Any]]
             require(label["status"] in STATUSES, "INVALID_STATUS")
             refs = strings(label["evidence_ids"], allow_empty=True)
             if label["status"] != "ANSWERED":
-                require(not refs and label["value"] is None and not tools, "INVALID_LABEL")
-                require(all(label[field] is None for field in
-                            ("queue", "start_date", "end_date", "metric_id")), "INVALID_LABEL")
+                require(not refs and label["value"] is None, "INVALID_LABEL")
+                if tools:
+                    require(label["status"] == "ABSTAIN", "INVALID_LABEL")
+                    require(label["queue"] in caller.allowed_queues and label["metric_id"] in METRICS, "INVALID_LABEL")
+                    interval(label["start_date"], label["end_date"])
+                else:
+                    require(all(label[field] is None for field in
+                                ("queue", "start_date", "end_date", "metric_id")), "INVALID_LABEL")
                 continue
             text(label["queue"], 30)
             require(label["queue"] in caller.allowed_queues, "SCOPE_DENIED")
@@ -164,17 +169,22 @@ def validate_dialogues(dialogues: list[Any], evidence: dict[str, dict[str, Any]]
                     require(source["start_date"] == label["start_date"]
                             and source["end_date"] == label["end_date"]
                             and integer(label["value"]) == source["value"], "AGGREGATE_MISMATCH")
-                    require(tools == ["read_service_metrics"], "INVALID_LABEL")
+                    require("read_service_metrics" in tools, "INVALID_LABEL")
                 else:
                     require(day(source["effective_from"]) <= first
                             and last <= day(source["effective_to"]), "STALE_EVIDENCE")
-                    require(label["value"] is None and tools == ["search_procedures"], "INVALID_LABEL")
-    require(len(families) == 12, "INVALID_FAMILY_COUNT")
+                    require("search_procedures" in tools, "INVALID_LABEL")
+            required_tools = (["search_procedures"] if any(ref in evidence for ref in refs) else []) + (
+                ["read_service_metrics"] if any(ref in aggregates for ref in refs) else [])
+            require(tools == required_tools and (any(ref in aggregates for ref in refs) or label["value"] is None),
+                    "INVALID_LABEL")
+    require(len(families) == (6 if validation else 12), "INVALID_FAMILY_COUNT")
     require(all(counts[(split, category)] == 2 for split in ("development", "holdout")
-                for category in CATEGORIES), "INVALID_SPLIT_COUNTS")
+                if not validation or split == "holdout" for category in CATEGORIES)
+            and (not validation or all(row["split"] == "holdout" for row in dialogues)), "INVALID_SPLIT_COUNTS")
 
 
-def validate_fixture_directory(root: Path = FIXTURES) -> None:
+def validate_fixture_directory(root: Path = FIXTURES) -> tuple[dict, dict]:
     validate_catalog(load_json(root / "metrics.json"))
     evidence = validate_procedures(load_json(root / "procedures.json"))
     with (root / "daily.csv").open(encoding="utf-8", newline="") as stream:
@@ -202,8 +212,40 @@ def validate_fixture_directory(root: Path = FIXTURES) -> None:
     for name in names:
         digest = hashlib.sha256((root / name).read_bytes()).hexdigest()
         require(manifest["sha256"][name] == digest, "FIXTURE_DIGEST_MISMATCH")
+    return evidence, aggregates
+
+
+def evaluation_cases(root: Path = FIXTURES) -> dict[str, list[dict[str, Any]]]:
+    evidence, aggregates = validate_fixture_directory(root)
+    manifest = load_json(root / "validation-v2.manifest.json")
+    record(manifest, {"version", "authored_before_runtime_revision", "method", "sha256"})
+    require(manifest["version"] == 2, "INVALID_VERSION")
+    record(manifest["sha256"], {"validation-v2.jsonl", "reference-errata.json"})
+    for name, expected in manifest["sha256"].items():
+        require(hashlib.sha256((root / name).read_bytes()).hexdigest() == expected, "FIXTURE_DIGEST_MISMATCH")
+    original = [json.loads(line) for line in (root / "dialogues.jsonl").read_text().splitlines()]
+    fresh = [json.loads(line) for line in (root / "validation-v2.jsonl").read_text().splitlines()]
+    require(not ({row["family_id"] for row in original} & {row["family_id"] for row in fresh}), "SPLIT_LEAKAGE")
+    require(not ({turn["message"] for row in original for turn in row["turns"]} &
+                 {turn["message"] for row in fresh for turn in row["turns"]}), "DUPLICATE_VALIDATION_INPUT")
+    validate_dialogues(fresh, evidence, aggregates, validation=True)
+    errata = load_json(root / "reference-errata.json")
+    record(errata, {"version", "reason", "corrections"})
+    require(errata["version"] == 1 and type(errata["corrections"]) is list, "INVALID_ERRATA")
+    by_id = {row["dialogue_id"]: row for row in original}
+    seen = set()
+    for item in errata["corrections"]:
+        record(item, {"dialogue_id", "turn_index", "expected", "expected_tools"})
+        identity, index = item["dialogue_id"], integer(item["turn_index"], maximum=3)
+        require(identity in by_id and (identity, index) not in seen, "INVALID_ERRATA")
+        seen.add((identity, index))
+        by_id[identity]["turns"][index].update(expected=item["expected"], expected_tools=item["expected_tools"])
+    validate_dialogues(original, evidence, aggregates)
+    return {"development": [row for row in original if row["split"] == "development"],
+            "regression": [row for row in original if row["split"] == "holdout"], "holdout": fresh}
 
 
 if __name__ == "__main__":
-    validate_fixture_directory()
+    evaluation_cases()
     print("Validated 12 procedures, 122 daily records, and 24 dialogues (12 development, 12 holdout).")
+    print("Validated 12 fresh validation dialogues and versioned reference errata.")

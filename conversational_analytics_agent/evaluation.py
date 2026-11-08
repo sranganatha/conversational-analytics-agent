@@ -19,7 +19,8 @@ def evidence_contexts(outcome: dict[str, Any]) -> list[dict[str, Any]]:
     return list(evidence.values())
 
 
-def independent_checks(expected: dict[str, Any], outcome: dict[str, Any], caller: Caller) -> dict[str, Any]:
+def independent_checks(expected: dict[str, Any], outcome: dict[str, Any], caller: Caller,
+                       procedure_thresholds: dict[str, int] | None = None) -> dict[str, Any]:
     answer = outcome["answer"]
     contexts = evidence_contexts(outcome)
     observed = {item["evidence_id"]: item for item in contexts}
@@ -43,6 +44,7 @@ def independent_checks(expected: dict[str, Any], outcome: dict[str, Any], caller
     slots_correct = None
     evidence_correct = None
     numeric_correct = None
+    claims_correct = None
     if expected["status"] == "ANSWERED":
         selection = outcome.get("resolved_request") or {}
         slots_correct = all(selection.get(key) == expected[key] for key in
@@ -55,11 +57,27 @@ def independent_checks(expected: dict[str, Any], outcome: dict[str, Any], caller
                                and set(re.findall(r"\b\d+\b", answer["message"])) <=
                                set(re.findall(r"\b\d+\b", str(contexts)))
                                and evidence_correct and slots_correct)
+    elif expected["queue"] is not None:
+        selection = outcome.get("resolved_request") or {}
+        slots_correct = all(selection.get(key) == expected[key] for key in
+                            ("queue", "start_date", "end_date", "metric_id"))
+    if procedure_thresholds is not None and answer["status"] == "ANSWERED":
+        references = []
+        for identity in expected["evidence_ids"]:
+            if identity.startswith("aggregate:"):
+                references.append({"kind": "count", "evidence_id": identity,
+                                   "value": expected["value"], "unit": "cases"})
+            else:
+                references.append({"kind": "deadline", "evidence_id": identity,
+                                   "value": procedure_thresholds[identity], "unit": "hours"})
+        actual = outcome.get("claims", [])
+        claims_correct = expected["status"] == "ANSWERED" and len(actual) == len(references) and all(
+            item in actual for item in references)
     return {"status_correct": status_correct, "slots_correct": slots_correct,
-            "evidence_correct": evidence_correct, "numeric_correct": numeric_correct,
+            "evidence_correct": evidence_correct, "numeric_correct": numeric_correct, "claims_correct": claims_correct,
             "security_failures": sorted(set(security_failures)),
             "exact_success": status_correct and not security_failures and all(
-                value is not False for value in (slots_correct, evidence_correct, numeric_correct))}
+                value is not False for value in (slots_correct, evidence_correct, numeric_correct, claims_correct))}
 
 
 def summarize(turns: list[dict[str, Any]]) -> dict[str, Any]:
@@ -75,6 +93,7 @@ def summarize(turns: list[dict[str, Any]]) -> dict[str, Any]:
             "exact_successes": sum(turn["checks"]["exact_success"] for turn in turns),
             "status_matches": sum(turn["checks"]["status_correct"] for turn in turns),
             "numeric_failures": sum(turn["checks"]["numeric_correct"] is False for turn in turns),
+            "claim_failures": sum(turn["checks"].get("claims_correct") is False for turn in turns),
             "security_failures": sum(bool(turn["checks"]["security_failures"]) for turn in turns),
             "faithfulness_eligible": len(eligible), "faithfulness_scored": len(scores),
             "faithfulness_mean": sum(scores) / len(scores) if scores else None,
@@ -90,6 +109,7 @@ def comparison_verdict(rows: list[dict[str, Any]], calibration_passed: bool, rep
               for mode in ("baseline", "conversational")}
     candidate = [turn for row in groups["conversational"] for turn in row["turns"]]
     if any(turn["checks"]["security_failures"] or turn["checks"]["numeric_correct"] is False
+           or turn["checks"].get("claims_correct") is False
            for turn in candidate):
         return "REJECTED"
     complete = all(len(group) == 12 * repetitions and

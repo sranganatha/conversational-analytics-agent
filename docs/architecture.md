@@ -2,21 +2,22 @@
 
 The application answers monthly questions about two synthetic service queues using
 versioned procedures and exact daily aggregates. A model selects read tools and
-composes answers. Application code owns authority, dates, budgets, and persistence.
+extracts typed evidence claims. Application code owns authority, tasks, dates, budgets,
+claim validation, presentation, and persistence.
 
 ```mermaid
 flowchart TD
     C[Trusted caller and message] --> S[Owner and version checked session claim]
-    S --> R[Resolve queue, metric and month]
+    S --> R[Resolve queue, metric, month and task]
     R -->|ambiguous| Q[Clarification]
-    R --> P[Model proposes read tools]
-    P --> V[Validate scope and arguments]
+    R --> P[Model proposes action]
+    P --> V[Validate task, scope and arguments]
     V --> D[SQLite FTS5 procedures]
     V --> A[Read-only DuckDB aggregates]
     D --> E[Current evidence and receipts]
     A --> E
-    E --> M[Model composes answer]
-    M --> B[Validate answer and evidence references]
+    E --> M[Model extracts typed claims]
+    M --> B[Validate roles, values, units and IDs; render]
     B --> T[Atomically commit outcome and receipts]
     Q --> T
     T --> O[Visible turn result]
@@ -30,10 +31,12 @@ Messages, retrieved documents, stored history, and model output cannot grant que
 access. Every tool call validates the current caller. Session ownership is independent
 of queue scope, and historical receipts are checked against current scope on read.
 
-Conversation state resolves references and carries explicit selections. A queue,
-month, or metric change invalidates incompatible active evidence. The answer composer
-receives current evidence, not prior answers as factual support. The baseline uses
-the same tools and model without prior dialogue state.
+Conversation state resolves references and carries explicit selections and task intent.
+A queue, month, or metric change invalidates incompatible active evidence. The planner
+receives normalized state rather than previous answer prose. Month-only corrections
+inherit an established year; no year is assumed for a new conversation. Scope denial
+and unsupported requests do not replace the last validated selection. The baseline
+uses the same tools and model without prior dialogue state.
 
 SQLite stores sessions, append-only turns, immutable receipt payloads, and outcomes.
 Inference runs outside write transactions. Short-lived claims prevent concurrent
@@ -50,7 +53,9 @@ incomplete sources produce visible outcomes rather than invented zero counts.
 
 Ollama serves one digest-pinned local model on the container network. Structured
 output has explicit schemas and byte/token/time limits. Calls have no automatic
-retry or fallback. Timeouts protect the client and local commit boundary; they do
+transport retry or provider fallback. A rejected action or typed claim can receive one
+visible repair generation per stage within the same four-call and 60-second turn
+budget. Timeouts protect the client and local commit boundary; they do
 not guarantee cancellation of inference already running on the server.
 
 ## Design choices
@@ -71,4 +76,6 @@ calibration each answer different questions. See [evaluation](evaluation.md).
 
 This is a single-host, synthetic-data reference. It does not implement external user
 authentication, distributed session storage, service availability, or general SQL
-generation. Valid citations and numeric-token checks do not prove prose support.
+generation. Typed claims are checked against current source records; their correctness
+does not establish the quality of arbitrary source text or unrestricted language.
+See the [task-contract decision](adr/0002-task-contracts-and-grounded-claims.md).

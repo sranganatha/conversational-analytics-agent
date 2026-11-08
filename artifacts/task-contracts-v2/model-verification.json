@@ -1,0 +1,1435 @@
+{
+  "cases": [
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": null,
+      "message": "For the intake queue in September 2026, what is the first-response rule?",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "intake-response-09"
+          ],
+          "message": "For the intake queue in 2026-09, the first-response deadline is 2 hours.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "intake-response-09",
+            "kind": "deadline",
+            "unit": "hours",
+            "value": 2
+          }
+        ],
+        "elapsed_ms": 2883.51,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "RULE",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 655.04,
+              "eval_count": 9,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 165
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "intake-response-09",
+                  "kind": "deadline",
+                  "unit": "hours",
+                  "value": 2
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2218.37,
+              "eval_count": 58,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 366
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-10-01",
+              "query": "first response",
+              "queue": "intake",
+              "start_date": "2026-09-01"
+            },
+            "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0",
+            "result": {
+              "evidence": [
+                {
+                  "effective_from": "2026-09-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-response-09",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 2
+                },
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-definitions",
+                  "metric_id": null,
+                  "queue": "intake",
+                  "text": "The intake queue distinguishes first-response breaches from resolution breaches. Counts use the service date in UTC. A case can breach both measures; do not add their counts.",
+                  "threshold_hours": null
+                }
+              ],
+              "status": "OK"
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "search_procedures"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-10-01",
+          "intent": "RULE",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-09",
+          "queue": "intake",
+          "start_date": "2026-09-01",
+          "tools": [
+            "search_procedures"
+          ]
+        },
+        "session_id": "4eb5acc736334bc189473c7d52693ac6",
+        "state": {
+          "active_evidence": {
+            "intake-definitions": {
+              "metric_id": null,
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            },
+            "intake-response-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            }
+          },
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": null,
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 1
+      },
+      "suite": 0
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": 120,
+      "message": "How many cases exceeded it that month?",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "aggregate:intake:first_response_breaches:2026-09"
+          ],
+          "message": "For the intake queue in 2026-09, the first-response breach count is 120 cases.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "read_service_metrics"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+            "kind": "count",
+            "unit": "cases",
+            "value": 120
+          }
+        ],
+        "elapsed_ms": 2561.18,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "COUNT",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 373.9,
+              "eval_count": 9,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 154
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+                  "kind": "count",
+                  "unit": "cases",
+                  "value": 120
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2140.38,
+              "eval_count": 70,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 355
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-10-01",
+              "metric_id": "first_response_breaches",
+              "queue": "intake",
+              "start_date": "2026-09-01"
+            },
+            "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25",
+            "result": {
+              "evidence": [
+                {
+                  "denominator": 360,
+                  "end_date": "2026-10-01",
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+                  "metric_id": "first_response_breaches",
+                  "numerator": 120,
+                  "queue": "intake",
+                  "start_date": "2026-09-01",
+                  "unit": "cases",
+                  "value": 120
+                }
+              ],
+              "status": "OK",
+              "threshold_evidence": [
+                {
+                  "effective_from": "2026-09-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-response-09",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 2
+                }
+              ]
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "read_service_metrics"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-10-01",
+          "intent": "COUNT",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-09",
+          "queue": "intake",
+          "start_date": "2026-09-01",
+          "tools": [
+            "read_service_metrics"
+          ]
+        },
+        "session_id": "4eb5acc736334bc189473c7d52693ac6",
+        "state": {
+          "active_evidence": {
+            "aggregate:intake:first_response_breaches:2026-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25"
+            },
+            "intake-definitions": {
+              "metric_id": null,
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            },
+            "intake-response-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25"
+            }
+          },
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": "first_response_breaches",
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "read_service_metrics"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 2
+      },
+      "suite": 0
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": 93,
+      "message": "And the previous month?",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "aggregate:intake:first_response_breaches:2026-08"
+          ],
+          "message": "For the intake queue in 2026-08, the first-response breach count is 93 cases.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+            "kind": "count",
+            "unit": "cases",
+            "value": 93
+          }
+        ],
+        "elapsed_ms": 2558.31,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "COUNT",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 402.81,
+              "eval_count": 9,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 151
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+                  "kind": "count",
+                  "unit": "cases",
+                  "value": 93
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2112.27,
+              "eval_count": 69,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 350
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-09-01",
+              "metric_id": "first_response_breaches",
+              "queue": "intake",
+              "start_date": "2026-08-01"
+            },
+            "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d",
+            "result": {
+              "evidence": [
+                {
+                  "denominator": 310,
+                  "end_date": "2026-09-01",
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+                  "metric_id": "first_response_breaches",
+                  "numerator": 93,
+                  "queue": "intake",
+                  "start_date": "2026-08-01",
+                  "unit": "cases",
+                  "value": 93
+                }
+              ],
+              "status": "OK",
+              "threshold_evidence": [
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-09-01",
+                  "evidence_id": "intake-response-08",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 4 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 4
+                }
+              ]
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "read_service_metrics"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-09-01",
+          "intent": "COUNT",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-08",
+          "queue": "intake",
+          "start_date": "2026-08-01",
+          "tools": [
+            "read_service_metrics"
+          ]
+        },
+        "session_id": "4eb5acc736334bc189473c7d52693ac6",
+        "state": {
+          "active_evidence": {
+            "aggregate:intake:first_response_breaches:2026-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d"
+            },
+            "intake-response-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d"
+            }
+          },
+          "selection": {
+            "end_date": "2026-09-01",
+            "metric_id": "first_response_breaches",
+            "queue": "intake",
+            "start_date": "2026-08-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 3
+      },
+      "suite": 0
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": 62,
+      "message": "What about the review queue?",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "aggregate:review:first_response_breaches:2026-08"
+          ],
+          "message": "For the review queue in 2026-08, the first-response breach count is 62 cases.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "review",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "aggregate:review:first_response_breaches:2026-08",
+            "kind": "count",
+            "unit": "cases",
+            "value": 62
+          }
+        ],
+        "elapsed_ms": 2569.1,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "COUNT",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 391.44,
+              "eval_count": 9,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 151
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "aggregate:review:first_response_breaches:2026-08",
+                  "kind": "count",
+                  "unit": "cases",
+                  "value": 62
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2137.97,
+              "eval_count": 69,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 347
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-09-01",
+              "metric_id": "first_response_breaches",
+              "queue": "review",
+              "start_date": "2026-08-01"
+            },
+            "receipt_id": "73d38e91af1d6e5f99fdea3c83fbf1713f6674452d930d84b48345700c948268",
+            "result": {
+              "evidence": [
+                {
+                  "denominator": 248,
+                  "end_date": "2026-09-01",
+                  "evidence_id": "aggregate:review:first_response_breaches:2026-08",
+                  "metric_id": "first_response_breaches",
+                  "numerator": 62,
+                  "queue": "review",
+                  "start_date": "2026-08-01",
+                  "unit": "cases",
+                  "value": 62
+                }
+              ],
+              "status": "OK",
+              "threshold_evidence": [
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-09-01",
+                  "evidence_id": "review-response-08",
+                  "metric_id": "first_response_breaches",
+                  "queue": "review",
+                  "text": "For the review queue, first response must occur within 8 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 8
+                }
+              ]
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "read_service_metrics"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-09-01",
+          "intent": "COUNT",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-08",
+          "queue": "review",
+          "start_date": "2026-08-01",
+          "tools": [
+            "read_service_metrics"
+          ]
+        },
+        "session_id": "4eb5acc736334bc189473c7d52693ac6",
+        "state": {
+          "active_evidence": {
+            "aggregate:review:first_response_breaches:2026-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "73d38e91af1d6e5f99fdea3c83fbf1713f6674452d930d84b48345700c948268"
+            },
+            "review-response-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "73d38e91af1d6e5f99fdea3c83fbf1713f6674452d930d84b48345700c948268"
+            }
+          },
+          "selection": {
+            "end_date": "2026-09-01",
+            "metric_id": "first_response_breaches",
+            "queue": "review",
+            "start_date": "2026-08-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "review",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 4
+      },
+      "suite": 0
+    },
+    {
+      "expected_status": "CLARIFY",
+      "expected_value": null,
+      "message": "How many review cases were overdue in September 2026?",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [],
+          "message": "Do you mean first response or resolution?",
+          "status": "CLARIFY",
+          "tool_calls": []
+        },
+        "claims": [],
+        "elapsed_ms": 5.05,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [],
+        "receipts": [],
+        "resolved_request": {
+          "decision": "CLARIFY",
+          "intent": "COUNT",
+          "message": "Do you mean first response or resolution?",
+          "metric_id": null,
+          "period": "2026-09",
+          "queue": "review",
+          "tools": []
+        },
+        "session_id": "c9736e744c3d41d28f8eac913ba1ee64",
+        "state": {
+          "active_evidence": {},
+          "selection": null
+        },
+        "tool_attempts": [],
+        "version": 1
+      },
+      "suite": 1
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": null,
+      "message": "For the intake queue in September 2026, what is the first-response rule?",
+      "mode": "baseline",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "intake-response-09"
+          ],
+          "message": "For the intake queue in 2026-09, the first-response deadline is 2 hours.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "intake-response-09",
+            "kind": "deadline",
+            "unit": "hours",
+            "value": 2
+          }
+        ],
+        "elapsed_ms": 3207.34,
+        "mode": "baseline",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "RULE",
+              "message": "The first-response rule for the intake queue in September 2026 is defined as follows: Any breach detected in the intake queue during this period will be prioritized for immediate response, ensuring timely resolution of security incidents."
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 1350.18,
+              "eval_count": 54,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 165
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "intake-response-09",
+                  "kind": "deadline",
+                  "unit": "hours",
+                  "value": 2
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 1850.13,
+              "eval_count": 58,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 366
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-10-01",
+              "query": "first response",
+              "queue": "intake",
+              "start_date": "2026-09-01"
+            },
+            "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0",
+            "result": {
+              "evidence": [
+                {
+                  "effective_from": "2026-09-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-response-09",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 2
+                },
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-definitions",
+                  "metric_id": null,
+                  "queue": "intake",
+                  "text": "The intake queue distinguishes first-response breaches from resolution breaches. Counts use the service date in UTC. A case can breach both measures; do not add their counts.",
+                  "threshold_hours": null
+                }
+              ],
+              "status": "OK"
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "search_procedures"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-10-01",
+          "intent": "RULE",
+          "message": "The first-response rule for the intake queue in September 2026 is defined as follows: Any breach detected in the intake queue during this period will be prioritized for immediate response, ensuring timely resolution of security incidents.",
+          "metric_id": "first_response_breaches",
+          "period": "2026-09",
+          "queue": "intake",
+          "start_date": "2026-09-01",
+          "tools": [
+            "search_procedures"
+          ]
+        },
+        "session_id": "3f117d95f1484e93be214087c8464219",
+        "state": {
+          "active_evidence": {
+            "intake-definitions": {
+              "metric_id": null,
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            },
+            "intake-response-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            }
+          },
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": null,
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 1
+      },
+      "suite": 2
+    },
+    {
+      "expected_status": "CLARIFY",
+      "expected_value": null,
+      "message": "How many cases exceeded it that month?",
+      "mode": "baseline",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [],
+          "message": "Please specify one queue, month and year, first-response or resolution metric.",
+          "status": "CLARIFY",
+          "tool_calls": []
+        },
+        "claims": [],
+        "elapsed_ms": 5.0,
+        "mode": "baseline",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [],
+        "receipts": [],
+        "resolved_request": {
+          "decision": "CLARIFY",
+          "intent": "COUNT",
+          "message": "Please specify one queue, month and year, first-response or resolution metric.",
+          "metric_id": null,
+          "period": null,
+          "queue": null,
+          "tools": []
+        },
+        "session_id": "3f117d95f1484e93be214087c8464219",
+        "state": {
+          "active_evidence": {},
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": null,
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [],
+        "version": 2
+      },
+      "suite": 2
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": 120,
+      "message": "Show both the first-response rule and count for intake in September 2026.",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "intake-response-09",
+            "aggregate:intake:first_response_breaches:2026-09"
+          ],
+          "message": "For the intake queue in 2026-09, the first-response deadline is 2 hours. For the intake queue in 2026-09, the first-response breach count is 120 cases.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            },
+            {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "read_service_metrics"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "intake-response-09",
+            "kind": "deadline",
+            "unit": "hours",
+            "value": 2
+          },
+          {
+            "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+            "kind": "count",
+            "unit": "cases",
+            "value": 120
+          }
+        ],
+        "elapsed_ms": 3399.05,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "BOTH",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 406.18,
+              "eval_count": 10,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 164
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "intake-response-09",
+                  "kind": "deadline",
+                  "unit": "hours",
+                  "value": 2
+                },
+                {
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+                  "kind": "count",
+                  "unit": "cases",
+                  "value": 120
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2953.89,
+              "eval_count": 109,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 459
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-10-01",
+              "query": "first response",
+              "queue": "intake",
+              "start_date": "2026-09-01"
+            },
+            "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0",
+            "result": {
+              "evidence": [
+                {
+                  "effective_from": "2026-09-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-response-09",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 2
+                },
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-definitions",
+                  "metric_id": null,
+                  "queue": "intake",
+                  "text": "The intake queue distinguishes first-response breaches from resolution breaches. Counts use the service date in UTC. A case can breach both measures; do not add their counts.",
+                  "threshold_hours": null
+                }
+              ],
+              "status": "OK"
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "search_procedures"
+          },
+          {
+            "arguments": {
+              "end_date": "2026-10-01",
+              "metric_id": "first_response_breaches",
+              "queue": "intake",
+              "start_date": "2026-09-01"
+            },
+            "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25",
+            "result": {
+              "evidence": [
+                {
+                  "denominator": 360,
+                  "end_date": "2026-10-01",
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-09",
+                  "metric_id": "first_response_breaches",
+                  "numerator": 120,
+                  "queue": "intake",
+                  "start_date": "2026-09-01",
+                  "unit": "cases",
+                  "value": 120
+                }
+              ],
+              "status": "OK",
+              "threshold_evidence": [
+                {
+                  "effective_from": "2026-09-01",
+                  "effective_to": "2026-10-01",
+                  "evidence_id": "intake-response-09",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 2 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 2
+                }
+              ]
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "read_service_metrics"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-10-01",
+          "intent": "BOTH",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-09",
+          "queue": "intake",
+          "start_date": "2026-09-01",
+          "tools": [
+            "search_procedures",
+            "read_service_metrics"
+          ]
+        },
+        "session_id": "826feb6018d44240b2fd11afeb1aee89",
+        "state": {
+          "active_evidence": {
+            "aggregate:intake:first_response_breaches:2026-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25"
+            },
+            "intake-definitions": {
+              "metric_id": null,
+              "receipt_id": "b9bf5d5dfbb85691a332abaa09e298b3a42aa2a08e37d3d2f6494564b3547ca0"
+            },
+            "intake-response-09": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "939e075b21e2312da9f2a629aac8823998496e00f63e1e17b748f2552d555e25"
+            }
+          },
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": "first_response_breaches",
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "query": "first response",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "search_procedures"
+            },
+            "outcome": "OK"
+          },
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-10-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-09-01"
+              },
+              "name": "read_service_metrics"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 1
+      },
+      "suite": 3
+    },
+    {
+      "expected_status": "ABSTAIN",
+      "expected_value": null,
+      "message": "Predict next month's count.",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [],
+          "message": "That request is outside the supported aggregate and procedure workflow.",
+          "status": "ABSTAIN",
+          "tool_calls": []
+        },
+        "claims": [],
+        "elapsed_ms": 5.14,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [],
+        "receipts": [],
+        "resolved_request": {
+          "decision": "ABSTAIN",
+          "intent": "COUNT",
+          "message": "That request is outside the supported aggregate and procedure workflow.",
+          "tools": []
+        },
+        "session_id": "826feb6018d44240b2fd11afeb1aee89",
+        "state": {
+          "active_evidence": {},
+          "selection": {
+            "end_date": "2026-10-01",
+            "metric_id": "first_response_breaches",
+            "queue": "intake",
+            "start_date": "2026-09-01"
+          }
+        },
+        "tool_attempts": [],
+        "version": 2
+      },
+      "suite": 3
+    },
+    {
+      "expected_status": "ANSWERED",
+      "expected_value": 93,
+      "message": "Only the count, for the previous month.",
+      "mode": "conversational",
+      "passed": true,
+      "result": {
+        "answer": {
+          "error_code": null,
+          "evidence_ids": [
+            "aggregate:intake:first_response_breaches:2026-08"
+          ],
+          "message": "For the intake queue in 2026-08, the first-response breach count is 93 cases.",
+          "status": "ANSWERED",
+          "tool_calls": [
+            {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            }
+          ]
+        },
+        "claims": [
+          {
+            "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+            "kind": "count",
+            "unit": "cases",
+            "value": 93
+          }
+        ],
+        "elapsed_ms": 2788.25,
+        "mode": "conversational",
+        "model": {
+          "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+          "model": "qwen3:1.7b"
+        },
+        "model_calls": [
+          {
+            "outcome": "RETURNED",
+            "phase": "plan",
+            "structured_output": {
+              "action": "COUNT",
+              "message": ""
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 402.63,
+              "eval_count": 9,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 154
+            }
+          },
+          {
+            "outcome": "RETURNED",
+            "phase": "answer",
+            "structured_output": {
+              "claims": [
+                {
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+                  "kind": "count",
+                  "unit": "cases",
+                  "value": 93
+                }
+              ],
+              "status": "ANSWERED"
+            },
+            "usage": {
+              "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+              "elapsed_ms": 2343.99,
+              "eval_count": 69,
+              "model": "qwen3:1.7b",
+              "prompt_eval_count": 353
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "arguments": {
+              "end_date": "2026-09-01",
+              "metric_id": "first_response_breaches",
+              "queue": "intake",
+              "start_date": "2026-08-01"
+            },
+            "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d",
+            "result": {
+              "evidence": [
+                {
+                  "denominator": 310,
+                  "end_date": "2026-09-01",
+                  "evidence_id": "aggregate:intake:first_response_breaches:2026-08",
+                  "metric_id": "first_response_breaches",
+                  "numerator": 93,
+                  "queue": "intake",
+                  "start_date": "2026-08-01",
+                  "unit": "cases",
+                  "value": 93
+                }
+              ],
+              "status": "OK",
+              "threshold_evidence": [
+                {
+                  "effective_from": "2026-08-01",
+                  "effective_to": "2026-09-01",
+                  "evidence_id": "intake-response-08",
+                  "metric_id": "first_response_breaches",
+                  "queue": "intake",
+                  "text": "For the intake queue, first response must occur within 4 hours. Count a breach only when elapsed time exceeds this threshold.",
+                  "threshold_hours": 4
+                }
+              ]
+            },
+            "source_digests": {
+              "catalog_digest": "da39aabf0cc5f6392291b020403b1c70ca4fc736958ccf93157582fb8e3a3658",
+              "corpus_digest": "11ed31efbbc5d0ff54817f07024e60e9e1a71147b6e0f09e868234dc07131d53",
+              "dataset_digest": "d0cc1336c09f13f69c6b3a33edf610ef7ffb12ab8c89a11685115670a49e1b65"
+            },
+            "tool_name": "read_service_metrics"
+          }
+        ],
+        "resolved_request": {
+          "decision": "LOOKUP",
+          "end_date": "2026-09-01",
+          "intent": "COUNT",
+          "message": "",
+          "metric_id": "first_response_breaches",
+          "period": "2026-08",
+          "queue": "intake",
+          "start_date": "2026-08-01",
+          "tools": [
+            "read_service_metrics"
+          ]
+        },
+        "session_id": "826feb6018d44240b2fd11afeb1aee89",
+        "state": {
+          "active_evidence": {
+            "aggregate:intake:first_response_breaches:2026-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d"
+            },
+            "intake-response-08": {
+              "metric_id": "first_response_breaches",
+              "receipt_id": "3242ba263b7ad0b17ff8159b267e25624445e2b2c490d832ef856e0172c5878d"
+            }
+          },
+          "selection": {
+            "end_date": "2026-09-01",
+            "metric_id": "first_response_breaches",
+            "queue": "intake",
+            "start_date": "2026-08-01"
+          }
+        },
+        "tool_attempts": [
+          {
+            "call": {
+              "arguments": {
+                "end_date": "2026-09-01",
+                "metric_id": "first_response_breaches",
+                "queue": "intake",
+                "start_date": "2026-08-01"
+              },
+              "name": "read_service_metrics"
+            },
+            "outcome": "OK"
+          }
+        ],
+        "version": 3
+      },
+      "suite": 3
+    }
+  ],
+  "code_digest": "10cb23a68b371cd8377a207a771837c7f9cde34be863a1b123b14db146b9134b",
+  "execution_mode": "ollama",
+  "langgraph": "1.2.20",
+  "model": {
+    "digest": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+    "license": "Apache-2.0",
+    "name": "qwen3:1.7b",
+    "quantization": "Q4_K_M",
+    "source": "https://huggingface.co/Qwen/Qwen3-1.7B"
+  },
+  "passed": true,
+  "preflight_error": null,
+  "python": "3.12.12",
+  "timestamp": "2026-11-08T03:07:00.587923+00:00"
+}

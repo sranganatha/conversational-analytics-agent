@@ -10,20 +10,21 @@ from ragas.messages import AIMessage, HumanMessage, ToolCall, ToolMessage
 from ragas.metrics import IDBasedContextPrecision, IDBasedContextRecall
 from ragas.metrics.collections import Faithfulness, ToolCallAccuracy
 
-from .contracts import ContractError, require
+from .contracts import ContractError, day, require
 from .evaluation import evidence_contexts
 from .tools import canonical
 
 
 class LocalJudge(InstructorBaseRagasLLM):
-    def __init__(self, model):
+    def __init__(self, model, clock=time.monotonic):
         self.model = model
+        self.clock = clock
         self.calls = []
         self.deadline = 0
 
     def generate(self, prompt, response_model):
         require(len(self.calls) < 2, "JUDGE_CALL_LIMIT")
-        remaining = self.deadline - time.monotonic()
+        remaining = self.deadline - self.clock()
         require(remaining > 0, "JUDGE_TIMEOUT")
         call = {"prompt": prompt, "schema": response_model.model_json_schema(), "usage": None}
         self.calls.append(call)
@@ -38,11 +39,12 @@ class LocalJudge(InstructorBaseRagasLLM):
 
     async def score(self, question, response, contexts):
         self.calls = []
-        self.deadline = time.monotonic() + 60
+        self.deadline = self.clock() + 60
         try:
             metric = Faithfulness(llm=self)
             score = (await metric.ascore(user_input=question, response=response,
                                         retrieved_contexts=contexts)).value
+            require(self.clock() <= self.deadline, "JUDGE_TIMEOUT")
             require(math.isfinite(score) and 0 <= score <= 1, "JUDGE_INVALID_SCORE")
             require(len(self.calls) == 2, "JUDGE_MISSING_CLAIMS")
             claims = self.calls[0]["output"]["statements"]
@@ -93,5 +95,33 @@ async def dialogue_tools(turns):
 async def score_faithfulness(judge, message, outcome):
     if outcome["answer"]["status"] != "ANSWERED":
         return {"state": "NOT_APPLICABLE", "value": None, "error_code": None, "calls": []}
-    return await judge.score(message, outcome["answer"]["message"],
-                             [canonical(item) for item in evidence_contexts(outcome)])
+    question = resolved_judge_question(outcome["resolved_request"])
+    contexts = [judge_context(item) for item in evidence_contexts(outcome)]
+    result = await judge.score(question, outcome["answer"]["message"], contexts)
+    return {**result, "judge_user_input": question, "judge_contexts": contexts,
+            "original_user_input": message}
+
+
+def resolved_judge_question(plan):
+    metric = "first-response" if plan["metric_id"] == "first_response_breaches" else "resolution"
+    task = {"COUNT": f"{metric} breach count", "RULE": f"{metric} deadline",
+            "BOTH": f"{metric} deadline and breach count"}[plan["intent"]]
+    return f"What is the {task} for the {plan['queue']} queue in {plan['period']}?"
+
+
+def judge_context(item):
+    """Expose source semantics in readable text and retain the exact underlying record."""
+    start = item.get("start_date", item.get("effective_from"))
+    end = item.get("end_date", item.get("effective_to"))
+    first, last = day(start), day(end)
+    next_year = first.year + (first.month == 12)
+    next_month = 1 if first.month == 12 else first.month + 1
+    monthly = first.day == 1 and last.isoformat() == f"{next_year:04d}-{next_month:02d}-01"
+    period = f"in {first:%Y-%m}" if monthly else f"from {start} inclusive to {end} exclusive"
+    prefix = f"Evidence ID: {item['evidence_id']}. For the {item['queue']} queue {period}, "
+    if "value" in item:
+        metric = "first-response" if item["metric_id"] == "first_response_breaches" else "resolution"
+        text = prefix + f"the {metric} breach count is {item['value']} {item['unit']}."
+    else:
+        text = prefix + "this procedure is applicable. " + item["text"]
+    return text + "\nExact source record: " + canonical(item)

@@ -20,12 +20,15 @@ arbitrary host files or unrelated containers.
 | `MODEL_IDENTITY_MISMATCH` | Check the configured name/digest and model cache; do not disable verification |
 | `MODEL_UNAVAILABLE`, `MODEL_HTTP_ERROR`, or `MODEL_TIMEOUT` | Inspect the project Ollama service; restore it before starting a new explicit request |
 | `MODEL_TRUNCATED` or `MODEL_SCHEMA_ERROR` | Keep the failed output visible; do not substitute a fixture answer |
-| `UNSUPPORTED_NUMBER`, `MISSING_NUMERIC_RESULT`, or invalid evidence | Treat as answer-validation failure, not a supported answer |
+| `TASK_TOOL_MISMATCH`, `CLAIM_MISMATCH`, or invalid evidence | The bounded repair did not produce a valid action/claim; retain the failure rather than replacing it |
 | `SESSION_CONFLICT` or `SESSION_BUSY` | Re-read the current session/version; do not replay a stale version blindly |
 | Expired session or exhausted turn budget | Start a new conversation |
 
 An error committed by the agent advances its session version and clears active
 answer evidence. Repeating the question is a new explicit turn with a new version.
+A scope denial is an anticipated abstention before data access, not an infrastructure
+error, and does not replace the previous valid selection. Action and claim repairs
+are visible in the trace; transport failures are not automatically retried.
 A client that loses a response should inspect persisted history before retrying;
 the store's version check prevents the old version from committing twice.
 

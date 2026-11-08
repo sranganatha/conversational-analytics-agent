@@ -42,7 +42,11 @@ def verify(output: Path) -> bool:
             ("conversational", [("How many review cases were overdue in September 2026?", "CLARIFY", None)]),
             ("baseline", [
                 ("For the intake queue in September 2026, what is the first-response rule?", "ANSWERED", None),
-                ("How many cases exceeded it that month?", "CLARIFY", None)])]
+                ("How many cases exceeded it that month?", "CLARIFY", None)]),
+            ("conversational", [
+                ("Show both the first-response rule and count for intake in September 2026.", "ANSWERED", 120),
+                ("Predict next month's count.", "ABSTAIN", None),
+                ("Only the count, for the previous month.", "ANSWERED", 93)])]
         with TemporaryDirectory() as temporary:
             store = SessionStore(Path(temporary) / "sessions.sqlite")
             for suite_index, (mode, cases) in enumerate(suites):
@@ -67,7 +71,7 @@ def verify(output: Path) -> bool:
                     print(f"{mode}: {message} -> {'PASS' if case['passed'] else 'FAIL'}", flush=True)
     except ContractError as exc:
         report["preflight_error"] = exc.code
-    report["passed"] = report["preflight_error"] is None and len(report["cases"]) == 7 and all(
+    report["passed"] = report["preflight_error"] is None and len(report["cases"]) == 10 and all(
         case["passed"] for case in report["cases"])
     output.mkdir(parents=True, exist_ok=True)
     (output / "model-verification.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -76,7 +80,7 @@ def verify(output: Path) -> bool:
              f"Code digest: `{report['code_digest']}`", "", "| Mode | Message | Result |", "|---|---|---|"]
     lines += [f"| {case['mode']} | {case['message']} | {'PASS' if case['passed'] else 'FAIL'} |" for case in report["cases"]]
     lines += ["", f"Preflight error: {report['preflight_error'] or 'none'}.",
-              "", "This seven-turn smoke run is not the held-out comparison or a Ragas evaluation.",
+              "", "This ten-turn smoke run is not the held-out comparison or a Ragas evaluation.",
               "Full visible outputs, tool receipts, failures, usage, and timings are in the JSON report."]
     (output / "model-verification.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return report["passed"]
