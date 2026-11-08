@@ -38,12 +38,15 @@ Do not delete session rows or receipt history to bypass a claim.
 
 ## Evaluation recovery
 
-Run calibration, development, and holdout commands in the order documented in
-[evaluation](evaluation.md). Reports checkpoint only completed dialogues and mark an
+Run calibration, development, regression, and holdout commands in the order documented
+in [evaluation](evaluation.md). Reports checkpoint only completed dialogues and mark an
 interrupted run incomplete. Preserve previous artifacts before a deliberate rerun.
 The evaluator restarts from the beginning and does not silently fill missing cases.
-A changed input fingerprint requires new matching prerequisites. A digest mismatch
-does not justify changing labels or removing a failed case.
+A separate `EVALUATION_OUTPUT=artifacts/local-run` on every evaluation command preserves
+the checked-in reports. `VERIFY_OUTPUT=artifacts/local-run` does the same for model
+verification. Default live output paths contain the recorded evidence and will be
+overwritten by reruns. A changed input fingerprint requires new matching prerequisites.
+A digest mismatch does not justify changing labels or removing a failed case.
 
 ## Verification
 
