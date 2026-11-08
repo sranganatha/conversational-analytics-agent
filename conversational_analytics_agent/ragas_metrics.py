@@ -16,14 +16,15 @@ from .tools import canonical
 
 
 class LocalJudge(InstructorBaseRagasLLM):
-    def __init__(self, model):
+    def __init__(self, model, clock=time.monotonic):
         self.model = model
+        self.clock = clock
         self.calls = []
         self.deadline = 0
 
     def generate(self, prompt, response_model):
         require(len(self.calls) < 2, "JUDGE_CALL_LIMIT")
-        remaining = self.deadline - time.monotonic()
+        remaining = self.deadline - self.clock()
         require(remaining > 0, "JUDGE_TIMEOUT")
         call = {"prompt": prompt, "schema": response_model.model_json_schema(), "usage": None}
         self.calls.append(call)
@@ -38,11 +39,12 @@ class LocalJudge(InstructorBaseRagasLLM):
 
     async def score(self, question, response, contexts):
         self.calls = []
-        self.deadline = time.monotonic() + 60
+        self.deadline = self.clock() + 60
         try:
             metric = Faithfulness(llm=self)
             score = (await metric.ascore(user_input=question, response=response,
                                         retrieved_contexts=contexts)).value
+            require(self.clock() <= self.deadline, "JUDGE_TIMEOUT")
             require(math.isfinite(score) and 0 <= score <= 1, "JUDGE_INVALID_SCORE")
             require(len(self.calls) == 2, "JUDGE_MISSING_CLAIMS")
             claims = self.calls[0]["output"]["statements"]

@@ -14,7 +14,7 @@ from tempfile import TemporaryDirectory
 from .agent import ConversationAgent
 from .contracts import Caller, ContractError, require
 from .evaluation import comparison_verdict, independent_checks, summarize
-from .fixtures import load_json, validate_fixture_directory
+from .fixtures import evaluation_cases, load_json
 from .model import OllamaModel
 from .ragas_metrics import LocalJudge, dialogue_tools, retrieval_scores, score_faithfulness
 from .store import SessionStore
@@ -53,6 +53,7 @@ def metadata():
     return {"execution_mode": "ollama-ragas", "timestamp": datetime.now(timezone.utc).isoformat(),
             "python": platform.python_version(), "architecture": platform.machine(),
             "source_revision": os.environ.get("SOURCE_REVISION", "unknown"), "fingerprints": fingerprints(),
+            "validation_manifest": load_json(ROOT / "fixtures" / "validation-v2.manifest.json"),
             "versions": {name: version(name) for name in ("ragas", "langgraph", "duckdb")},
             "policy": policy}
 
@@ -97,8 +98,8 @@ def run_dialogue(agent, store, dialogue):
 def markdown(report):
     lines = ["# Paired conversational evaluation", "", f"Split: {report['split']}",
              f"Execution: {report['execution_mode']}", f"Complete: {report['complete']}",
-             f"Verdict: **{report['verdict']}**", "", "| Repetition | Mode | Exact turns | Status matches | Faithfulness coverage | Numeric failures | Errors |",
-             "|---|---|---|---|---|---|---|"]
+             f"Verdict: **{report['verdict']}**", "", "| Repetition | Mode | Exact turns | Status matches | Faithfulness coverage | Numeric failures | Claim failures | Errors |",
+             "|---|---|---|---|---|---|---|---|"]
     for rep in range(report["repetitions"]):
         for mode in ("baseline", "conversational"):
             turns = [turn for row in report["dialogues"] if row["repetition"] == rep and row["mode"] == mode
@@ -107,10 +108,13 @@ def markdown(report):
             lines.append(f"| {rep + 1} | {mode} | {summary['exact_successes']}/{summary['turns']} | "
                          f"{summary['status_matches']}/{summary['turns']} | "
                          f"{summary['faithfulness_scored']}/{summary['faithfulness_eligible']} | "
-                         f"{summary['numeric_failures']} | {summary['statuses'].get('ERROR', 0)} |")
+                         f"{summary['numeric_failures']} | {summary['claim_failures']} | {summary['statuses'].get('ERROR', 0)} |")
     lines += ["", "Faithfulness uses the same model weights as answer generation with separate Ragas prompts.",
               "Calibration disagreements and missing judge results limit conclusions. Citation IDs alone do not establish support.",
               "Exact checks cover expected state, current evidence, and numeric tokens; they do not prove prose semantics.",
+              "Typed claims are also checked against independent count and procedure references, including value, role, unit, and ID.",
+              "The original holdout is regression data with versioned reference errata; this holdout uses fresh author-frozen families.",
+              "The fixture author also implemented the corrections. This is not an independently blind benchmark.",
               "Retrieval ID precision/recall and full-dialogue tool accuracy appear per case in the JSON report.",
               "Search wording is excluded from argument comparison; scope, dates, metric IDs, names, and order are scored.",
               "Errors remain in denominators. Clarifications and abstentions are excluded only from faithfulness.",
@@ -119,7 +123,7 @@ def markdown(report):
 
 
 async def evaluate(output, split):
-    validate_fixture_directory()
+    cases = evaluation_cases()
     calibration = load_json(output / "judge-calibration.json")
     frozen = {"fingerprints": fingerprints(), "policy": load_json(ROOT / "config" / "evaluation.json")}
     require(calibration["fingerprints"] == frozen["fingerprints"] and calibration["complete"],
@@ -128,6 +132,9 @@ async def evaluate(output, split):
         development = load_json(output / "evaluation-development.json")
         require(development["complete"] and development["fingerprints"] == frozen["fingerprints"],
                 "DEVELOPMENT_REQUIRED")
+        regression = load_json(output / "evaluation-regression.json")
+        require(regression["complete"] and regression["fingerprints"] == frozen["fingerprints"],
+                "REGRESSION_REQUIRED")
         freeze_path = output / "evaluation-freeze.json"
         if freeze_path.exists():
             require(load_json(freeze_path) == frozen, "FROZEN_CONFIGURATION_CHANGED")
@@ -140,8 +147,9 @@ async def evaluate(output, split):
               "dialogues": [], "complete": False, "verdict": "INSUFFICIENT_EVIDENCE"}
     path = output / f"evaluation-{split}.json"
     write_report(path, report)
-    dialogues = [json.loads(line) for line in (ROOT / "fixtures" / "dialogues.jsonl").read_text().splitlines()]
-    selected = [row for row in dialogues if row["split"] == split]
+    selected = cases[split]
+    thresholds = {item["evidence_id"]: item["threshold_hours"] for item in
+                  load_json(ROOT / "fixtures" / "procedures.json")["procedures"]}
     tools = EvidenceTools()
     for repetition in range(report["repetitions"]):
         for index, dialogue in enumerate(selected):
@@ -156,7 +164,7 @@ async def evaluate(output, split):
                 for source, outcome in zip(dialogue["turns"], outcomes):
                     turn = {"message": source["message"], "expected": source["expected"],
                             "expected_tools": source["expected_tools"], "outcome": outcome}
-                    turn["checks"] = independent_checks(source["expected"], outcome, Caller.parse(dialogue["caller"]))
+                    turn["checks"] = independent_checks(source["expected"], outcome, Caller.parse(dialogue["caller"]), thresholds)
                     turn["checks"]["tool_order_correct"] = (
                         [attempt["call"]["name"] for attempt in outcome["tool_attempts"]] == source["expected_tools"])
                     turn["checks"]["exact_success"] &= turn["checks"]["tool_order_correct"]
@@ -181,8 +189,8 @@ async def evaluate(output, split):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("calibrate", "development", "holdout"))
-    parser.add_argument("--output", type=Path, default=Path("artifacts"))
+    parser.add_argument("action", choices=("calibrate", "development", "regression", "holdout"))
+    parser.add_argument("--output", type=Path, default=Path("artifacts/task-contracts-v2"))
     args = parser.parse_args()
     try:
         report = asyncio.run(calibrate(args.output) if args.action == "calibrate"

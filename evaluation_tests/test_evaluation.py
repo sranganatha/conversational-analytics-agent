@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from conversational_analytics_agent.contracts import Caller
 from conversational_analytics_agent.evaluate import run_dialogue
 from conversational_analytics_agent.evaluation import comparison_verdict, independent_checks, summarize
-from conversational_analytics_agent.fixtures import load_json
+from conversational_analytics_agent.fixtures import evaluation_cases, load_json
 from conversational_analytics_agent.ragas_metrics import LocalJudge, dialogue_tools, retrieval_scores
 from conversational_analytics_agent.store import SessionStore
 from conversational_analytics_agent.tools import EvidenceTools
@@ -31,6 +31,41 @@ def example():
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_fresh_validation_is_separate_and_errata_does_not_rewrite_original(self):
+        cases = evaluation_cases()
+        self.assertEqual({key: len(value) for key, value in cases.items()},
+                         {"development": 12, "regression": 12, "holdout": 12})
+        self.assertFalse({row["family_id"] for row in cases["holdout"]} &
+                         {row["family_id"] for row in cases["development"] + cases["regression"]})
+        corrected = next(row for row in cases["regression"] if row["dialogue_id"] == "unavailable-month-intake")
+        self.assertEqual(corrected["turns"][0]["expected_tools"], ["read_service_metrics"])
+        root = Path(__file__).resolve().parent.parent
+        import json
+        original = [json.loads(line) for line in (root / "fixtures/dialogues.jsonl").read_text().splitlines()]
+        unmodified = next(row for row in original if row["dialogue_id"] == corrected["dialogue_id"])
+        self.assertEqual(unmodified["turns"][0]["expected_tools"], [])
+
+    def test_independent_claim_oracle_rejects_wrong_unit_despite_correct_number(self):
+        caller, label, outcome = example()
+        outcome["claims"] = [{"kind": "count", "evidence_id": label["evidence_ids"][0], "value": 120, "unit": "hours"}]
+        checks = independent_checks(label, outcome, caller, {})
+        self.assertFalse(checks["claims_correct"])
+        self.assertFalse(checks["exact_success"])
+
+    def test_judge_late_result_is_missing_coverage_not_a_valid_score(self):
+        class Model:
+            def __init__(self):
+                self.outputs = iter([{"statements": ["120 cases."]}, {"statements": [
+                    {"statement": "120 cases.", "reason": "Supported", "verdict": 1}]}])
+
+            def generate(self, *args):
+                return next(self.outputs), {}
+
+        ticks = iter([0, 1, 2, 61])
+        result = asyncio.run(LocalJudge(Model(), clock=lambda: next(ticks)).score("Count?", "120 cases.", ["120 cases."]))
+        self.assertEqual(result["error_code"], "JUDGE_TIMEOUT")
+        self.assertEqual(result["state"], "ERROR")
+
     def test_calibration_citation_identities_exist_in_supplied_context(self):
         root = Path(__file__).resolve().parent.parent
         cases = load_json(root / "config" / "judge-calibration.json")["cases"]

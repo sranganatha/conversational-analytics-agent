@@ -37,7 +37,7 @@ services:
     security_opt: [no-new-privileges:true]
     volumes:
       - ./artifacts:/app/artifacts
-    command: ["python", "-m", "conversational_analytics_agent.verify_model", "artifacts"]
+    command: ["python", "-m", "conversational_analytics_agent.verify_model", "${VERIFY_OUTPUT:-artifacts/task-contracts-v2}"]
 
   chat:
     extends:
